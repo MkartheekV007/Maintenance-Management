@@ -10,9 +10,9 @@ const today=()=>new Date().toLocaleDateString("en-CA");
 const dayOf=d=>d?new Date(d+"T00:00:00Z").toLocaleDateString("en-US",{weekday:"long",timeZone:"UTC"}):"";
 const dutyOf=d=>{if(!d)return"";const[y,m,x]=d.split("-"),r=SEED.duties.find(z=>z[4]===m+"/"+x+"/"+y.slice(2));return r?r.slice(0,3).map(s=>s.trim()).filter(Boolean).join(" & "):""};
 const findItem=n=>Object.keys(db.stock).find(k=>k.toLowerCase()===String(n).trim().toLowerCase());
-let db={stock:{...SEED.stock},duties:SEED.duties,admins:SEED.admins,srd:[],records:[],complaints:[]};
+let db={stock:{...SEED.stock},duties:SEED.duties,admins:SEED.admins,srd:[],records:[],complaints:[],members:[]};
 let ses={role:"",name:"",roll:"",userId:"",tab:""},nt=null;
-const TABS={student:[["raise","Raise complaint"],["upd","My repair updates"]],srd:[["req","Request item"],["prev","Previous requests"]],member:[["dash","Summary"],["comp","Complaints"],["pend","Pending (raw)"],["done","Complete repair"],["stock","Stock"]]};
+const TABS={student:[["raise","Raise complaint"],["upd","My repair updates"]],srd:[["req","Request item"],["prev","Previous requests"]],member:[["dash","Summary"],["comp","Complaints"],["pend","Pending (raw)"],["done","Complete repair"],["stock","Stock"],["members","Members"]]};
 const flash=(m,k,tab)=>{nt={m,k};if(tab)ses.tab=tab;render()};
 const pick=r=>{ses={role:r,name:"",roll:"",userId:"",tab:""};nt=null;render()};
 const out=async()=>{await sb.auth.signOut();ses={role:"",name:"",roll:"",userId:"",tab:""};nt=null;render()};
@@ -22,6 +22,10 @@ const E=(...a)=>a.map(esc);
 async function loadAdminData(){const c=await sb.from("complaints").select("*").order("complaint_no",{ascending:false});const st=await sb.from("stock").select("*").order("item_name");const sr=await sb.from("srd_requests").select("*").order("request_no",{ascending:false});if(c.error)throw c.error;if(st.error)throw st.error;if(sr.error)throw sr.error;db.complaints=(c.data||[]).filter(x=>x.status!=="FIXED");db.records=(c.data||[]).filter(x=>x.status==="FIXED");db.stock={};(st.data||[]).forEach(x=>db.stock[x.item_name]=x.quantity);db.srd=sr.data||[]} 
 async function loadSrdData(){const st=await sb.from("stock").select("*").order("item_name");const sr=await sb.from("srd_requests").select("*").eq("requested_by",ses.userId).order("request_no",{ascending:false});if(st.error)throw st.error;if(sr.error)throw sr.error;db.stock={};(st.data||[]).forEach(x=>db.stock[x.item_name]=x.quantity);db.srd=sr.data||[]}
 async function loadStudentHistory(){const r=await sb.rpc("track_public_complaints",{p_registration_no:ses.roll});if(r.error)throw r.error;db.complaints=(r.data||[]).filter(x=>x.status!=="FIXED");db.records=(r.data||[]).filter(x=>x.status==="FIXED")}
+async function loadMembers(){const r=await sb.functions.invoke("manage-members",{body:{action:"list"}});if(r.error)throw r.error;if(r.data?.error)throw new Error(r.data.error);db.members=r.data?.members||[]}
+async function memberLogin(id,password){const r=await sb.functions.invoke("manage-members",{body:{action:"login",member_id:id,password}});if(r.error)throw r.error;if(r.data?.error)throw new Error(r.data.error);const s=r.data?.session;if(!s?.access_token||!s?.refresh_token)throw new Error("Invalid Login!");const adopted=await sb.auth.setSession(s);if(adopted.error)throw adopted.error;return r.data.profile}
+async function addMember(){const id=$("#mid").value.trim(),name=$("#mn").value.trim(),email=$("#me").value.trim(),pw=$("#mp").value;if(!id||!name||!email||!pw)return flash("Enter Member ID, name, email and initial password.","er");const r=await sb.functions.invoke("manage-members",{body:{action:"create",member_id:id,name,email,password:pw}});if(r.error)return flash("Member could not be added: "+r.error.message,"er");if(r.data?.error)return flash("Member could not be added: "+r.data.error,"er");await loadMembers();flash("Member "+name+" added successfully.","ok","members");render()}
+async function changePassword(){const p1=$("#cp1").value,p2=$("#cp2").value;if(!p1||p1.length<6)return flash("Password must be at least 6 characters.","er");if(p1!==p2)return flash("Passwords do not match.","er");const {error}=await sb.auth.updateUser({password:p1});if(error)return flash("Password could not be changed: "+error.message,"er");flash("Password changed successfully.","ok","members");render()}
 
 
 const V={
@@ -49,7 +53,17 @@ done:()=>`<section class=card><h2>Complete a repair</h2><label>Repair ID<input i
  <p><button class=g onclick="addRow()">+ Add another item</button></p><button class=p onclick="complete()">Mark complete</button></section>`,
 stock:()=>`<section class=card><h2>Update stock</h2><div class=row><label>Item<input id=sn2 list=il></label><label>Quantity to add<input id=sq type=number min=0></label></div>
  <datalist id=il>${Object.keys(db.stock).map(k=>`<option value="${esc(k)}">`).join('')}</datalist><button class=p onclick="addStock()">Add stock</button></section>
- <section class=card><h2>Current stock</h2><label>Search<input oninput="fs(this.value)"></label><div class=tw><table id=st><tr><th>Item</th><th>Quantity</th></tr>${Object.entries(db.stock).map(([k,q])=>`<tr><td>${esc(k)}</td><td>${q}</td></tr>`).join('')}</table></div></section>`
+ <section class=card><h2>Current stock</h2><label>Search<input oninput="fs(this.value)"></label><div class=tw><table id=st><tr><th>Item</th><th>Quantity</th></tr>${Object.entries(db.stock).map(([k,q])=>`<tr><td>${esc(k)}</td><td>${q}</td></tr>`).join('')}</table></div></section>`,
+members:()=>`<section class=card><h2>Add department member</h2>
+ <div class=row><label>Member ID<input id=mid inputmode=numeric placeholder="Example: 109"></label><label>Name<input id=mn placeholder="Member name"></label></div>
+ <div class=row><label>Email ID<input id=me type=email placeholder="member@example.com"></label><label>Initial Password<input id=mp type=password minlength=6 placeholder="Minimum 6 characters"></label></div>
+ <p class=mu style="font-size:13px">The member will use this Member ID and password to log in. They can change the password after login.</p>
+ <button class=p onclick="addMember()">Add member</button></section>
+ <section class=card><h2>Department members</h2>${tbl(['Member ID','Name','Email','Status'],db.members.map(m=>E(m.registration_no,m.full_name,m.email,'Active')))}</section>
+ <section class=card><h2>Change my password</h2>
+ <label>New Password<input id=cp1 type=password minlength=6 placeholder="Minimum 6 characters"></label>
+ <label>Confirm New Password<input id=cp2 type=password minlength=6></label>
+ <button class=p onclick="changePassword()">Change password</button></section>`
 };
 
 const save=()=>{};
@@ -71,7 +85,7 @@ function render(){
 async function studentContinue(){const roll=$("#sid").value.trim(),name=$("#sn").value.trim();if(!roll||!name)return flash("Please enter your ID and name.","er");ses.roll=roll;ses.name=name;ses.tab="raise";try{await loadStudentHistory()}catch(e){return flash("Could not load your saved complaints: "+e.message,"er")}render()}
 const loginV=()=>`<section class=card><h2>Admin login</h2><div class=row><label>ID<input id=lid inputmode=numeric></label><label>Password<input id=lpw type=password></label></div>
  <p class=mu style="font-size:13px">admins.csv has no password column, so any non-empty password is accepted until one is added (as a third column).</p><button class=p onclick="login()">Login</button></section>`;
-async function login(){const id=$("#lid").value.trim(),pw=$("#lpw").value;if(!id||!pw)return flash("Invalid Login!","er");let email=id;if(ses.role==="member"&&id==="24040112017")email="kartheekvishwanadh@gmail.com";else if(ses.role==="member")return flash("Invalid Login!","er");const {data,error}=await sb.auth.signInWithPassword({email,password:pw});if(error||!data.user)return flash("Invalid Login!","er");const {data:p,error:pe}=await sb.from("profiles").select("*").eq("id",data.user.id).single();const expected=ses.role==="member"?"admin":"srd";if(pe||!p||p.role!==expected){await sb.auth.signOut();return flash("Invalid Login!","er")}ses.name=p.full_name;ses.userId=p.id;ses.tab=ses.role==="member"?"dash":"req";nt={m:"Login successful. Welcome "+p.full_name+"!","k":"ok"};try{if(ses.role==="member")await loadAdminData();else await loadSrdData()}catch(e){nt={m:"Login succeeded, but data could not be loaded.","k":"er"}}render()};
+async function login(){const id=$("#lid").value.trim(),pw=$("#lpw").value;if(!id||!pw)return flash("Invalid Login!","er");if(ses.role==="member"){try{const p=await memberLogin(id,pw);ses.name=p.full_name;ses.userId=p.id;ses.roll=p.registration_no||"";ses.tab="dash";nt={m:"Login successful. Welcome "+p.full_name+"!","k":"ok"};await loadAdminData();await loadMembers();}catch(e){return flash("Invalid Login!","er")}}else{const {data,error}=await sb.auth.signInWithPassword({email:id,password:pw});if(error||!data.user)return flash("Invalid Login!","er");const {data:p,error:pe}=await sb.from("profiles").select("*").eq("id",data.user.id).single();if(pe||!p||p.role!=="srd"){await sb.auth.signOut();return flash("Invalid Login!","er")}ses.name=p.full_name;ses.userId=p.id;ses.tab="req";nt={m:"Login successful. Welcome "+p.full_name+"!","k":"ok"};try{await loadSrdData()}catch(e){nt={m:"Login succeeded, but data could not be loaded.","k":"er"}}}render()};
 
 function sync(){const d=$('#d').value,p=$('#t').value==='Plumbing';$('#dy').value=dayOf(d);$('#du').textContent=dutyOf(d)||'Not Found';$('#pl').hidden=!p;$('#rm').hidden=p}
 async function raise(){
@@ -113,4 +127,4 @@ async function addStock(){const n=$('#sn2').value.trim(),q=parseInt($('#sq').val
  render();
 }
 function fs(v){v=v.toLowerCase();document.querySelectorAll('#st tr').forEach((r,i)=>{if(i)r.hidden=!r.cells[0].textContent.toLowerCase().includes(v)})}
-; (async()=>{const {data:{session}}=await sb.auth.getSession();if(session){const {data:p}=await sb.from("profiles").select("*").eq("id",session.user.id).single();if(p?.role==="admin"){ses={role:"member",name:p.full_name,userId:p.id,tab:"dash"};try{await loadAdminData()}catch(e){console.error(e)}}else if(p?.role==="srd"){ses={role:"srd",name:p.full_name,userId:p.id,tab:"req"};try{await loadSrdData()}catch(e){console.error(e)}}}render()})();
+; (async()=>{const {data:{session}}=await sb.auth.getSession();if(session){const {data:p}=await sb.from("profiles").select("*").eq("id",session.user.id).single();if(p?.role==="admin"){ses={role:"member",name:p.full_name,userId:p.id,roll:p.registration_no||"",tab:"dash"};try{await loadAdminData();await loadMembers()}catch(e){console.error(e)}}else if(p?.role==="srd"){ses={role:"srd",name:p.full_name,userId:p.id,tab:"req"};try{await loadSrdData()}catch(e){console.error(e)}}}render()})();
