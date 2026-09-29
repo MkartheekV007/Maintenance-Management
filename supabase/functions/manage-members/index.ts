@@ -86,16 +86,15 @@ Deno.serve(async (req) => {
         .eq("role", "admin")
         .single();
 
-      let email = profile?.email || null;
+      if (pe || !profile) return json({ error: "Invalid Login!" }, 401);
 
-      if (!email) {
-        const { data: users, error: ue } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
-        if (ue) throw ue;
-        const u = (users.users || []).find(x => x.id === profile?.id);
-        email = u?.email || null;
-      }
+      const { data: users, error: ue } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+      if (ue) throw ue;
 
-      if (pe || !profile || !email) return json({ error: "Invalid Login!" }, 401);
+      const user = (users.users || []).find(x => x.id === profile.id);
+      const email = user?.email || null;
+
+      if (!email) return json({ error: "Invalid Login!" }, 401);
 
       const { data, error } = await publicClient.auth.signInWithPassword({
         email,
