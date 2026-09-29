@@ -45,11 +45,20 @@ const loginV=()=>`<section class=card><h2>Admin login</h2><div class=row><label>
 async function login(){const id=$("#lid").value.trim(),pw=$("#lpw").value;if(!id||!pw)return flash("Invalid Login!","er");let email=id;if(ses.role==="member"&&id==="24040112017")email="kartheekvishwanadh@gmail.com";else if(ses.role==="member")return flash("Invalid Login!","er");const {data,error}=await sb.auth.signInWithPassword({email,password:pw});if(error||!data.user)return flash("Invalid Login!","er");const {data:p,error:pe}=await sb.from("profiles").select("*").eq("id",data.user.id).single();const expected=ses.role==="member"?"admin":"srd";if(pe||!p||p.role!==expected){await sb.auth.signOut();return flash("Invalid Login!","er")}ses.name=p.full_name;ses.userId=p.id;ses.tab=ses.role==="member"?"dash":"req";nt={m:"Login successful. Welcome "+p.full_name+"!","k":"ok"};try{if(ses.role==="member")await loadAdminData();else await loadSrdData()}catch(e){nt={m:"Login succeeded, but data could not be loaded.","k":"er"}}render()};
 
 function sync(){const d=$('#d').value,p=$('#t').value==='Plumbing';$('#dy').value=dayOf(d);$('#du').textContent=dutyOf(d)||'Not Found';$('#pl').hidden=!p;$('#rm').hidden=p}
-function raise(){const d=$('#d').value,t=$('#t').value;if(!d)return flash('Pick a date.','er');let room;
+async function raise(){
+ const d=$('#d').value,t=$('#t').value;if(!d)return flash('Pick a date.','er');
+ let room;
  if(t==='Plumbing'){const n=$('#num').value.trim();if(!n)return flash('Enter the tap / bathroom / washroom number.','er');room=`${$('#side').value} ${$('#pr').value} ${n}`}
  else{room=$('#room').value.trim();if(!room)return flash('Enter the room.','er')}
- const id=nextId(),m=dutyOf(d)||'Not Found';db.complaints.push({name:ses.name,type:t,id,cost:0,day:dayOf(d),member:m,room});save();
- flash(`Complaint saved. Repair ID ${id} · assigned to ${m}.`,'ok','upd')}
+ const {data,error}=await sb.rpc('submit_public_complaint',{
+   p_registration_no:ses.roll,p_student_name:ses.name,p_complaint_date:d,
+   p_complaint_type:t,p_location:room,p_details:room,p_assigned_to:dutyOf(d)||'Not Found'
+ });
+ if(error||!data?.length)return flash(error?.message||'Could not save complaint.','er');
+ await loadStudentHistory();
+ flash(`Complaint saved. Repair ID ${data[0].complaint_no} · assigned to ${dutyOf(d)||'Not Found'}.`,'ok','upd');
+ render();
+}
 function chk(){const k=findItem($('#item').value),el=$('#av');
  if(!$('#item').value.trim())el.textContent='';else if(k){el.className='mu';el.textContent=`Available in stock · Quantity in stock: ${db.stock[k]}`}else{el.className='';el.style.color='var(--er)';el.textContent='Item is not available in stock. Please contact any Maintenance member.'}}
 function reqItem(){const k=findItem($('#item').value);if(!k)return flash('Item is not available in stock. Please contact any Maintenance member.','er');
