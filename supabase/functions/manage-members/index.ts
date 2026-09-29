@@ -88,12 +88,10 @@ Deno.serve(async (req) => {
 
       if (pe || !profile) return json({ error: "Invalid Login!" }, 401);
 
-      const { data: users, error: ue } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+      const { data: userResult, error: ue } = await admin.auth.admin.getUserById(profile.id);
       if (ue) throw ue;
 
-      const user = (users.users || []).find(x => x.id === profile.id);
-      const email = user?.email || null;
-
+      const email = userResult.user?.email || null;
       if (!email) return json({ error: "Invalid Login!" }, 401);
 
       const { data, error } = await publicClient.auth.signInWithPassword({
