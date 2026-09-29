@@ -81,7 +81,7 @@ Deno.serve(async (req) => {
 
       const { data: profile, error: pe } = await admin
         .from("profiles")
-        .select("id,registration_no,full_name,role,email:auth_email")
+        .select("id,registration_no,full_name,role")
         .eq("registration_no", memberId)
         .eq("role", "admin")
         .single();
