@@ -16,7 +16,7 @@ const TABS={student:[["raise","Raise complaint"],["upd","My repair updates"]],sr
 const flash=(m,k,tab)=>{nt={m,k};if(tab)ses.tab=tab;render()};
 const pick=r=>{ses={role:r,name:"",roll:"",userId:"",tab:""};nt=null;render()};
 const out=async()=>{await sb.auth.signOut();ses={role:"",name:"",roll:"",userId:"",tab:""};nt=null;render()};
-const tab=t=>{ses.tab=t;nt=null;render()};
+const tab=async t=>{ses.tab=t;nt=null;if(ses.role==="member"&&t==="members"){try{await loadMembers()}catch(e){return flash("Members could not be loaded: "+e.message,"er","members")}}render()};
 const tbl=(h,rows)=>rows.length?"<div class=tw><table><tr>"+h.map(x=>"<th>"+x+"</th>").join("")+"</tr>"+rows.map(r=>"<tr>"+r.map(c=>"<td>"+c+"</td>").join("")+"</tr>").join("")+"</table></div>":"<p class=mu>Nothing here yet.</p>";
 const E=(...a)=>a.map(esc);
 async function loadAdminData(){const c=await sb.from("complaints").select("*").order("complaint_no",{ascending:false});const st=await sb.from("stock").select("*").order("item_name");const sr=await sb.from("srd_requests").select("*").order("request_no",{ascending:false});if(c.error)throw c.error;if(st.error)throw st.error;if(sr.error)throw sr.error;db.complaints=(c.data||[]).filter(x=>x.status!=="FIXED");db.records=(c.data||[]).filter(x=>x.status==="FIXED");db.stock={};(st.data||[]).forEach(x=>db.stock[x.item_name]=x.quantity);db.srd=sr.data||[]} 
@@ -127,4 +127,4 @@ async function addStock(){const n=$('#sn2').value.trim(),q=parseInt($('#sq').val
  render();
 }
 function fs(v){v=v.toLowerCase();document.querySelectorAll('#st tr').forEach((r,i)=>{if(i)r.hidden=!r.cells[0].textContent.toLowerCase().includes(v)})}
-; (async()=>{const {data:{session}}=await sb.auth.getSession();if(session){const {data:p}=await sb.from("profiles").select("*").eq("id",session.user.id).single();if(p?.role==="admin"){ses={role:"member",name:p.full_name,userId:p.id,roll:p.registration_no||"",tab:"dash"};try{await loadAdminData();await loadMembers()}catch(e){console.error(e)}}else if(p?.role==="srd"){ses={role:"srd",name:p.full_name,userId:p.id,tab:"req"};try{await loadSrdData()}catch(e){console.error(e)}}}render()})();
+; (async()=>{const {data:{session}}=await sb.auth.getSession();if(session){const {data:p}=await sb.from("profiles").select("*").eq("id",session.user.id).single();if(p?.role==="admin"){ses={role:"member",name:p.full_name,userId:p.id,roll:p.registration_no||"",tab:"dash"};try{await loadAdminData()}catch(e){console.error(e)}}else if(p?.role==="srd"){ses={role:"srd",name:p.full_name,userId:p.id,tab:"req"};try{await loadSrdData()}catch(e){console.error(e)}}}render()})();
