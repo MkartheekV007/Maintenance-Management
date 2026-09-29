@@ -3,7 +3,7 @@ const SEED={"stock":{"keyboard":0,"Projector remote":0,"headphone":0,"XLR small 
 const SUPABASE_URL="https://flmzdktzswjjofpsclbc.supabase.co";
 const SUPABASE_KEY=String.fromCharCode(115,98,95,112,117,98,108,105,115,104,97,98,108,101,95,65,112,111,78,113,49,98,105,72,108,105,86,105,117,57,71,57,116,49,76,122,81,95,56,75,111,111,82,120,116,54);
 const supabaseLib=window.supabase;if(!supabaseLib||typeof supabaseLib.createClient!=="function"){document.getElementById("app").innerHTML="<main><section class=card><h2>System loading error</h2><p class=mu>Supabase library could not be loaded. Please refresh this page.</p></section></main>";throw new Error("Supabase library failed to load")}const {createClient}=supabaseLib;
-const sb=createClient(SUPABASE_URL,SUPABASE_KEY);
+const sb=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const today=()=>new Date().toLocaleDateString("en-CA");
@@ -19,7 +19,7 @@ const out=async()=>{await sb.auth.signOut();ses={role:"",name:"",roll:"",userId:
 const tab=t=>{ses.tab=t;nt=null;render()};
 const tbl=(h,rows)=>rows.length?"<div class=tw><table><tr>"+h.map(x=>"<th>"+x+"</th>").join("")+"</tr>"+rows.map(r=>"<tr>"+r.map(c=>"<td>"+c+"</td>").join("")+"</tr>").join("")+"</table></div>":"<p class=mu>Nothing here yet.</p>";
 const E=(...a)=>a.map(esc);
-async function loadAdminData(){const c=await sb.from("complaints").select("*").order("complaint_no",{ascending:false});const st=await sb.from("stock").select("*").order("item_name");const sr=await sb.from("srd_requests").select("*").order("request_no",{ascending:false});if(c.error)throw c.error;if(st.error)throw st.error;db.complaints=(c.data||[]).filter(x=>x.status!=="FIXED");db.records=(c.data||[]).filter(x=>x.status==="FIXED");db.stock={};(st.data||[]).forEach(x=>db.stock[x.item_name]=x.quantity);db.srd=sr.error?[]:(sr.data||[])}
+async function loadAdminData(){const c=await sb.from("complaints").select("*").order("complaint_no",{ascending:false});const st=await sb.from("stock").select("*").order("item_name");const sr=await sb.from("srd_requests").select("*").order("request_no",{ascending:false});if(c.error)throw c.error;if(st.error)throw st.error;if(sr.error)throw sr.error;db.complaints=(c.data||[]).filter(x=>x.status!=="FIXED");db.records=(c.data||[]).filter(x=>x.status==="FIXED");db.stock={};(st.data||[]).forEach(x=>db.stock[x.item_name]=x.quantity);db.srd=sr.data||[]} 
 async function loadSrdData(){const st=await sb.from("stock").select("*").order("item_name");const sr=await sb.from("srd_requests").select("*").eq("requested_by",ses.userId).order("request_no",{ascending:false});if(st.error)throw st.error;if(sr.error)throw sr.error;db.stock={};(st.data||[]).forEach(x=>db.stock[x.item_name]=x.quantity);db.srd=sr.data||[]}
 async function loadStudentHistory(){const r=await sb.rpc("track_public_complaints",{p_registration_no:ses.roll});if(r.error)throw r.error;db.complaints=(r.data||[]).filter(x=>x.status!=="FIXED");db.records=(r.data||[]).filter(x=>x.status==="FIXED")}
 
@@ -68,7 +68,7 @@ function render(){
   }}
  $('#app').innerHTML=h+'</main>';
 }
-async function studentContinue(){const roll=$("#sid").value.trim(),name=$("#sn").value.trim();if(!roll||!name)return flash("Please enter your ID and name.","er");ses.roll=roll;ses.name=name;ses.tab="raise";try{await loadStudentHistory()}catch(e){}render()}
+async function studentContinue(){const roll=$("#sid").value.trim(),name=$("#sn").value.trim();if(!roll||!name)return flash("Please enter your ID and name.","er");ses.roll=roll;ses.name=name;ses.tab="raise";try{await loadStudentHistory()}catch(e){return flash("Could not load your saved complaints: "+e.message,"er")}render()}
 const loginV=()=>`<section class=card><h2>Admin login</h2><div class=row><label>ID<input id=lid inputmode=numeric></label><label>Password<input id=lpw type=password></label></div>
  <p class=mu style="font-size:13px">admins.csv has no password column, so any non-empty password is accepted until one is added (as a third column).</p><button class=p onclick="login()">Login</button></section>`;
 async function login(){const id=$("#lid").value.trim(),pw=$("#lpw").value;if(!id||!pw)return flash("Invalid Login!","er");let email=id;if(ses.role==="member"&&id==="24040112017")email="kartheekvishwanadh@gmail.com";else if(ses.role==="member")return flash("Invalid Login!","er");const {data,error}=await sb.auth.signInWithPassword({email,password:pw});if(error||!data.user)return flash("Invalid Login!","er");const {data:p,error:pe}=await sb.from("profiles").select("*").eq("id",data.user.id).single();const expected=ses.role==="member"?"admin":"srd";if(pe||!p||p.role!==expected){await sb.auth.signOut();return flash("Invalid Login!","er")}ses.name=p.full_name;ses.userId=p.id;ses.tab=ses.role==="member"?"dash":"req";nt={m:"Login successful. Welcome "+p.full_name+"!","k":"ok"};try{if(ses.role==="member")await loadAdminData();else await loadSrdData()}catch(e){nt={m:"Login succeeded, but data could not be loaded.","k":"er"}}render()};
