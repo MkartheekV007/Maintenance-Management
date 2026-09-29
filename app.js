@@ -70,7 +70,7 @@ function render(){
 }
 async function studentContinue(){const roll=$("#sid").value.trim(),name=$("#sn").value.trim();if(!roll||!name)return flash("Please enter your ID and name.","er");ses.roll=roll;ses.name=name;ses.tab="raise";try{await loadStudentHistory()}catch(e){return flash("Could not load your saved complaints: "+e.message,"er")}render()}
 const loginV=()=>`<section class=card><h2>Admin login</h2><div class=row><label>ID<input id=lid inputmode=numeric></label><label>Password<input id=lpw type=password></label></div>
- <p class=mu style="font-size:13px">admins.csv has no password column, so any non-empty password is accepted until one is added (as a third column).</p><button class=p onclick="login()">Login</button></section>`;
+ <p class=mu style="font-size:13px">Use the Member ID and password provided by the department administrator.</p><button class=p onclick="login()">Login</button></section>`;
 async function login(){
  const id=$("#lid").value.trim(),pw=$("#lpw").value;
  if(!id||!pw)return flash("Invalid Login!","er");
