@@ -20,7 +20,9 @@ const tab=t=>{ses.tab=t;nt=null;render()};
 const tbl=(h,rows)=>rows.length?"<div class=tw><table><tr>"+h.map(x=>"<th>"+x+"</th>").join("")+"</tr>"+rows.map(r=>"<tr>"+r.map(c=>"<td>"+c+"</td>").join("")+"</tr>").join("")+"</table></div>":"<p class=mu>Nothing here yet.</p>";
 const E=(...a)=>a.map(esc);
 async function loadAdminData(){const c=await sb.from("complaints").select("*").order("complaint_no",{ascending:false});const st=await sb.from("stock").select("*").order("item_name");const sr=await sb.from("srd_requests").select("*").order("request_no",{ascending:false});if(c.error)throw c.error;if(st.error)throw st.error;if(sr.error)throw sr.error;db.complaints=(c.data||[]).filter(x=>x.status!=="FIXED");db.records=(c.data||[]).filter(x=>x.status==="FIXED");db.stock={};(st.data||[]).forEach(x=>db.stock[x.item_name]=x.quantity);db.srd=sr.data||[]} 
-async function loadSrdData(){const st=await sb.from("stock").select("*").order("item_name");const sr=await sb.from("srd_requests").select("*").eq("requested_by",ses.userId).order("request_no",{ascending:false});if(st.error)throw st.error;if(sr.error)throw sr.error;db.stock={};(st.data||[]).forEach(x=>db.stock[x.item_name]=x.quantity);db.srd=sr.data||[]}\nasync function loadMembers(){const r=await sb.functions.invoke("manage-members",{body:{action:"list"}});if(r.error)throw r.error;if(r.data?.error)throw new Error(r.data.error);db.members=r.data?.members||[]}\nasync function memberLogin(id,password){const r=await sb.functions.invoke("manage-members",{body:{action:"login",member_id:id,password}});if(r.error)throw r.error;if(r.data?.error)throw new Error(r.data.error);const s=r.data?.session;if(!s?.access_token||!s?.refresh_token)throw new Error("Invalid Login!");const adopted=await sb.auth.setSession(s);if(adopted.error)throw adopted.error;return r.data.profile}
+async function loadSrdData(){const st=await sb.from("stock").select("*").order("item_name");const sr=await sb.from("srd_requests").select("*").eq("requested_by",ses.userId).order("request_no",{ascending:false});if(st.error)throw st.error;if(sr.error)throw sr.error;db.stock={};(st.data||[]).forEach(x=>db.stock[x.item_name]=x.quantity);db.srd=sr.data||[]}
+async function loadMembers(){const r=await sb.functions.invoke("manage-members",{body:{action:"list"}});if(r.error)throw r.error;if(r.data?.error)throw new Error(r.data.error);db.members=r.data?.members||[]}
+async function memberLogin(id,password){const r=await sb.functions.invoke("manage-members",{body:{action:"login",member_id:id,password}});if(r.error)throw r.error;if(r.data?.error)throw new Error(r.data.error);const s=r.data?.session;if(!s?.access_token||!s?.refresh_token)throw new Error("Invalid Login!");const adopted=await sb.auth.setSession(s);if(adopted.error)throw adopted.error;return r.data.profile}
 async function loadStudentHistory(){const r=await sb.rpc("track_public_complaints",{p_registration_no:ses.roll});if(r.error)throw r.error;db.complaints=(r.data||[]).filter(x=>x.status!=="FIXED");db.records=(r.data||[]).filter(x=>x.status==="FIXED")}
 
 
@@ -50,7 +52,16 @@ done:()=>`<section class=card><h2>Complete a repair</h2><label>Repair ID<input i
 stock:()=>`<section class=card><h2>Update stock</h2><div class=row><label>Item<input id=sn2 list=il></label><label>Quantity to add<input id=sq type=number min=0></label></div>
  <datalist id=il>${Object.keys(db.stock).map(k=>`<option value="${esc(k)}">`).join('')}</datalist><button class=p onclick="addStock()">Add stock</button></section>
  <section class=card><h2>Current stock</h2><label>Search<input oninput="fs(this.value)"></label><div class=tw><table id=st><tr><th>Item</th><th>Quantity</th></tr>${Object.entries(db.stock).map(([k,q])=>`<tr><td>${esc(k)}</td><td>${q}</td></tr>`).join('')}</table></div></section>`
-};
+members:()=>`<section class=card><h2>Add department member</h2>
+ <div class=row><label>Member ID<input id=mid inputmode=numeric placeholder="Example: 109"></label><label>Name<input id=mn placeholder="Member name"></label></div>
+ <div class=row><label>Email ID<input id=me type=email placeholder="member@example.com"></label><label>Initial Password<input id=mp type=password minlength=6 placeholder="Minimum 6 characters"></label></div>
+ <p class=mu style="font-size:13px">The member will use this Member ID and password to log in. They can change the password after login.</p>
+ <button class=p onclick="addMember()">Add member</button></section>
+ <section class=card><h2>Department members</h2>${tbl(['Member ID','Name','Email','Status'],db.members.map(m=>E(m.registration_no,m.full_name,m.email,'Active')))}</section>
+ <section class=card><h2>Change my password</h2>
+ <label>New Password<input id=cp1 type=password minlength=6 placeholder="Minimum 6 characters"></label>
+ <label>Confirm New Password<input id=cp2 type=password minlength=6></label>
+ <button class=p onclick="changePassword()">Change password</button></section>`,};
 
 const save=()=>{};
 function render(){
