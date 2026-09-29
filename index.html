@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="SSSIHL Maintenance Management System">
+<title>Maintenance Management · SSSIHL Nandigiri</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-mark">M</div>
+    <div><strong>Maintenance Management</strong><span>SSSIHL · Nandigiri Campus</span></div>
+  </div>
+  <div id="userBar" class="userbar hidden"></div>
+</header>
+
+<main class="container">
+  <div id="toastArea"></div>
+
+  <section id="loginView" class="login-wrap">
+    <div class="hero-card">
+      <div class="eyebrow">DIGITAL MAINTENANCE DESK</div>
+      <h1>Report. Track. Resolve.</h1>
+      <p>One place for hostel complaints, maintenance stock and SRD requests.</p>
+    </div>
+    <div class="panel login-card">
+      <h2>Sign in</h2>
+      <p class="muted">Choose your role to continue.</p>
+      <div class="role-tabs">
+        <button class="role-tab active" data-role="student">Student</button>
+        <button class="role-tab" data-role="srd">SRD</button>
+        <button class="role-tab" data-role="admin">Admin</button>
+      </div>
+      <form id="loginForm" class="stack">
+        <label><span id="identLabel">Registration number</span><input id="ident" required inputmode="numeric" placeholder="Enter registration number"></label>
+        <label>Password<input id="password" type="password" required placeholder="Enter password"></label>
+        <button class="primary full" type="submit">Sign in</button>
+      </form>
+      <p class="login-note">Static GitHub Pages version · data is stored in this browser.</p>
+    </div>
+  </section>
+
+  <section id="studentView" class="view hidden">
+    <div class="page-head"><div><div class="eyebrow">STUDENT PORTAL</div><h1>Report a problem</h1><p class="muted">Submit a maintenance complaint and follow its status.</p></div></div>
+    <div class="stats"><div class="stat"><span>My complaints</span><strong id="studentTotal">0</strong></div><div class="stat"><span>Pending</span><strong id="studentPending">0</strong></div><div class="stat"><span>Fixed</span><strong id="studentDone">0</strong></div></div>
+    <div class="panel">
+      <h2>New complaint</h2>
+      <form id="complaintForm" class="grid">
+        <label>Date<input id="complaintDate" type="date" required></label>
+        <label>Type<select id="complaintType"><option>Plumbing</option><option>Electric</option><option>Carpentry</option></select></label>
+        <label class="wide">Where is the problem?<input id="complaintRoom" maxlength="120" required placeholder="e.g. A14 side washroom, tap 2"></label>
+        <label class="wide">Details <textarea id="complaintDetails" maxlength="300" placeholder="Describe the problem briefly"></textarea></label>
+        <button class="primary" type="submit">Send complaint</button>
+      </form>
+    </div>
+    <div class="panel">
+      <div class="section-head"><h2>My complaints</h2><button class="ghost" onclick="renderStudent()">Refresh</button></div>
+      <div id="studentComplaints"></div>
+    </div>
+  </section>
+
+  <section id="srdView" class="view hidden">
+    <div class="page-head"><div><div class="eyebrow">SRD PORTAL</div><h1>Request an item</h1><p class="muted">Check stock and submit an item request.</p></div></div>
+    <div class="panel">
+      <h2>New item request</h2>
+      <form id="srdForm" class="grid">
+        <label>Date<input id="srdDate" type="date" required></label>
+        <label>Item<input id="srdItem" list="stockNames" required placeholder="e.g. Mic stand"></label>
+        <datalist id="stockNames"></datalist>
+        <button class="primary" type="submit">Send request</button>
+      </form>
+    </div>
+    <div class="panel">
+      <h2>Recent requests</h2>
+      <div id="srdRequests"></div>
+    </div>
+  </section>
+
+  <section id="adminView" class="view hidden">
+    <div class="page-head"><div><div class="eyebrow">ADMIN PORTAL</div><h1>Maintenance dashboard</h1><p class="muted">Manage repairs, stock and SRD requests.</p></div></div>
+    <div class="stats">
+      <div class="stat"><span>Pending repairs</span><strong id="adminPendingCount">0</strong></div>
+      <div class="stat"><span>Completed</span><strong id="adminDoneCount">0</strong></div>
+      <div class="stat"><span>Stock items</span><strong id="adminStockCount">0</strong></div>
+      <div class="stat"><span>SRD requests</span><strong id="adminRequestCount">0</strong></div>
+    </div>
+    <nav class="jump"><a href="#pending">Pending</a><a href="#stock">Stock</a><a href="#requests">SRD requests</a><a href="#account">Account</a></nav>
+
+    <div class="panel" id="pending"><div class="section-head"><h2>Pending repairs</h2><span id="pendingBadge" class="badge"></span></div><div id="pendingList"></div></div>
+    <div class="panel" id="stock">
+      <h2>Stock</h2>
+      <form id="stockForm" class="row">
+        <input id="stockItem" placeholder="Item name" required maxlength="80">
+        <input id="stockQty" type="number" min="0" placeholder="Quantity" required>
+        <button class="primary" type="submit">Add to stock</button>
+      </form>
+      <div id="stockTable"></div>
+    </div>
+    <div class="panel" id="requests"><h2>SRD item requests</h2><div id="adminRequests"></div></div>
+    <div class="panel narrow" id="account">
+      <h2>Change password</h2>
+      <form id="passwordForm" class="stack">
+        <label>Current password<input id="currentPassword" type="password" required></label>
+        <label>New password<input id="newPassword" type="password" minlength="8" required></label>
+        <label>New password again<input id="againPassword" type="password" minlength="8" required></label>
+        <button class="primary" type="submit">Change password</button>
+      </form>
+    </div>
+  </section>
+</main>
+<script src="app.js"></script>
+</body>
+</html>
