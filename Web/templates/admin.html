@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Admin · Maintenance{% endblock %}
+{% block body %}
+<nav class="jump"><a href="#pending">Pending ({{ pending|length }})</a><a href="#stock">Stock</a><a href="#requests">SRD requests</a><a href="#account">Account</a></nav>
+
+<section class="panel" id="pending">
+  <h1>Pending repairs</h1>
+  {% for c in pending %}
+  <article class="job {{ 'mine' if c.duty == session.name }}">
+    <div class="job-head">
+      <span class="num">{{ c.id }}</span>
+      <strong>{{ c.type }}</strong> · {{ c.room }}
+      {% if c.duty == session.name %}<span class="pill mine">Yours</span>{% endif %}
+    </div>
+    <p class="meta">{{ c.student }} · {{ c.date }} ({{ c.day }}) · assigned to {{ c.duty }}{% if c.details %}<br>{{ c.details }}{% endif %}</p>
+    <details>
+      <summary>Complete repair</summary>
+      <form method="post" action="{{ url_for('admin_complete', cid=c.id) }}" class="stack">
+        <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+        <p class="hint">List anything used from stock. Leave blank if nothing.</p>
+        {% for i in range(3) %}
+        <div class="row"><input name="item" placeholder="Item used" maxlength="80"><input name="qty" type="number" min="1" placeholder="Qty"></div>
+        {% endfor %}
+        <label>Cost (optional) <input name="cost" type="number" min="0" step="0.01"></label>
+        <button class="primary">Mark as fixed</button>
+      </form>
+    </details>
+  </article>
+  {% else %}<p class="empty">Nothing is waiting. New complaints appear here.</p>{% endfor %}
+
+  {% if done %}
+  <h2>Recently fixed</h2>
+  <div class="scroll"><table>
+    <tr><th>ID</th><th>Type</th><th>Where</th><th>Fixed by</th><th>On</th><th>Items used</th></tr>
+    {% for c in done %}<tr><td class="num">{{ c.id }}</td><td>{{ c.type }}</td><td>{{ c.room }}</td><td>{{ c.done_by }}</td><td>{{ c.done_on }}</td><td>{{ c.items_used or '—' }}</td></tr>{% endfor %}
+  </table></div>
+  {% endif %}
+</section>
+
+<section class="panel" id="stock">
+  <h2>Stock</h2>
+  <form method="post" action="{{ url_for('admin_stock') }}" class="row">
+    <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+    <input name="item" placeholder="Item" required maxlength="80">
+    <input name="qty" type="number" min="0" placeholder="Quantity to add" required>
+    <button class="primary">Add to stock</button>
+  </form>
+  <div class="scroll"><table>
+    <tr><th>Item</th><th>In stock</th></tr>
+    {% for s in stock %}<tr><td>{{ s.item }}</td><td class="num {{ 'zero' if s.qty == 0 }}">{{ s.qty }}</td></tr>{% endfor %}
+  </table></div>
+</section>
+
+<section class="panel" id="requests">
+  <h2>SRD item requests</h2>
+  {% if requests %}
+  <div class="scroll"><table>
+    <tr><th>SRD</th><th>Item</th><th>Date</th><th>Day</th></tr>
+    {% for r in requests %}<tr><td>{{ r.srd }}</td><td>{{ r.item }}</td><td>{{ r.date }}</td><td>{{ r.day }}</td></tr>{% endfor %}
+  </table></div>
+  {% else %}<p class="empty">No SRD requests yet.</p>{% endif %}
+</section>
+
+<section class="panel narrow" id="account">
+  <h2>Change my password</h2>
+  <form method="post" action="{{ url_for('admin_password') }}" class="stack">
+    <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+    <label>Current password <input type="password" name="current" required autocomplete="current-password"></label>
+    <label>New password (8+ characters) <input type="password" name="new" required minlength="8" autocomplete="new-password"></label>
+    <label>New password again <input type="password" name="again" required minlength="8" autocomplete="new-password"></label>
+    <button class="primary">Change password</button>
+  </form>
+</section>
+{% endblock %}
