@@ -113,7 +113,7 @@ async function login(email,password,selectedRole){
       await db.auth.signOut();
       currentUser=null;
       currentRole=null;
-      showToast("This account is registered as "+currentRoleLabel(selectedRole)+"? Check the selected role.","error");
+      showToast("This account is registered as "+currentRoleLabel(currentRole)+". Select the correct role and sign in again.","error");
       return;
     }
     await enterPortal();
