@@ -54,7 +54,10 @@ function setUserBar(){
 }
 
 function setDates(){
-  ["complaintDate","srdDate"].forEach(id=>$(id).value=today());
+  ["complaintDate","srdDate"].forEach(id=>{
+    const el = $(id);
+    if(el) el.value = today();
+  });
 }
 
 async function getProfile(userId){
