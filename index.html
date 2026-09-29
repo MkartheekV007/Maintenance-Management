@@ -37,11 +37,11 @@
         <button class="role-tab" data-role="admin">Admin</button>
       </div>
       <form id="loginForm" class="stack">
-        <label><span id="identLabel">Registration number</span><input id="ident" required inputmode="numeric" placeholder="Enter registration number"></label>
-        <label>Password<input id="password" type="password" required placeholder="Enter password"></label>
+        <label><span id="identLabel">Email</span><input id="ident" type="email" required autocomplete="username" placeholder="Enter your email"></label>
+        <label>Password<input id="password" type="password" required autocomplete="current-password" placeholder="Enter password"></label>
         <button class="primary full" type="submit">Sign in</button>
       </form>
-      <p class="login-note">Static GitHub Pages version · data is stored in this browser.</p>
+      <p class="login-note">Shared cloud version · data is stored in Supabase.</p>
     </div>
   </section>
 
@@ -69,14 +69,13 @@
     <div class="panel">
       <h2>New item request</h2>
       <form id="srdForm" class="grid">
-        <label>Date<input id="srdDate" type="date" required></label>
         <label>Item<input id="srdItem" list="stockNames" required placeholder="e.g. Mic stand"></label>
         <datalist id="stockNames"></datalist>
         <button class="primary" type="submit">Send request</button>
       </form>
     </div>
     <div class="panel">
-      <h2>Recent requests</h2>
+      <h2>My requests</h2>
       <div id="srdRequests"></div>
     </div>
   </section>
@@ -105,14 +104,14 @@
     <div class="panel narrow" id="account">
       <h2>Change password</h2>
       <form id="passwordForm" class="stack">
-        <label>Current password<input id="currentPassword" type="password" required></label>
-        <label>New password<input id="newPassword" type="password" minlength="8" required></label>
-        <label>New password again<input id="againPassword" type="password" minlength="8" required></label>
+        <label>New password<input id="newPassword" type="password" minlength="8" autocomplete="new-password" required></label>
+        <label>New password again<input id="againPassword" type="password" minlength="8" autocomplete="new-password" required></label>
         <button class="primary" type="submit">Change password</button>
       </form>
     </div>
   </section>
 </main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="app.js"></script>
 </body>
 </html>
