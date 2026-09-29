@@ -32,16 +32,16 @@ raise:()=>{const d=today();return `<section class=card><h2>Raise a complaint</h2
  <div id=pl class=row3><label>Side<select id=side><option>A14 Side<option>A05 Side<option>B12 Side<option>B1 Side</select></label>
  <label>Problem<select id=pr><option>Tap<option>Bathroom<option>Washroom</select></label><label>Number<input id=num></label></div>
  <label id=rm hidden>Room<input id=room></label><button class=p onclick="raise()">Submit complaint</button></section>`},
-upd:()=>{const n=ses.name.toLowerCase(),f=(l,s)=>l.filter(c=>c.name.trim().toLowerCase()===n).map(c=>[c.id,c.type,esc(c.room),esc(c.day),`<span class="tag ${s?'ok':'wa'}">${s?'Completed':'Pending'}</span>`]);
- return `<section class=card><h2>My repair updates</h2>${tbl(['ID','Type','Room','Day','Status'],[...f(db.complaints,0),...f(db.records,1)])}</section>`},
+upd:()=>{const n=ses.roll.trim().toLowerCase(),all=[...db.complaints,...db.records],f=all.filter(c=>String(c.registration_no||'').trim().toLowerCase()===n).map(c=>[c.complaint_no,c.complaint_type,esc(c.location),esc(c.complaint_date),`<span class="tag ${c.status==='FIXED'?'ok':'wa'}">${c.status==='FIXED'?'Completed':esc(c.status)}</span>`]);
+ return `<section class=card><h2>My repair updates</h2>${tbl(['ID','Type','Location','Date','Status'],f)}</section>`},
 req:()=>{const d=today();return `<section class=card><h2>Request an item</h2>
  <div class=row><label>Date<input type=date id=d value="${d}" oninput="$('#dy').value=dayOf(this.value)"></label><label>Day<input id=dy readonly value="${dayOf(d)}"></label></div>
  <label>Item<input id=item list=il oninput="chk()" autocomplete=off></label><datalist id=il>${Object.keys(db.stock).map(k=>`<option value="${esc(k)}">`).join('')}</datalist>
  <p id=av class=mu></p><button class=p onclick="reqItem()">Save request</button></section>`},
-prev:()=>`<section class=card><h2>Previous item requests</h2>${tbl(['SRD','Date','Day','Item'],db.srd.map(r=>E(r.name,r.date,r.day,r.item)))}</section>`,
+prev:()=>`<section class=card><h2>Previous item requests</h2>${tbl(['Date','Day','Item','Qty','Status'],db.srd.map(r=>E(new Date(r.created_at).toLocaleDateString('en-CA'),dayOf(new Date(r.created_at).toLocaleDateString('en-CA')),r.item_name,r.quantity,r.status)))}</section>`,
 dash:()=>{const s=Object.values(db.stock);return `<div class=stats><div class=stat><b>${db.complaints.length}</b><span>Pending repairs</span></div><div class=stat><b>${db.records.length}</b><span>Completed repairs</span></div><div class=stat><b>${s.length}</b><span>Stock items</span></div><div class=stat><b>${s.filter(q=>q<=0).length}</b><span>Out of stock</span></div></div>
  <section class=card><h2>Admin: ${esc(ses.name)}</h2><p class=mu>Use the tabs above to view complaints, complete repairs and update stock.</p></section>`},
-comp:()=>`<section class=card><h2>All complaints</h2>${tbl(['Name','Type','ID','Day','Assigned','Room'],db.complaints.map(c=>E(c.name,c.type,c.id,c.day,c.member,c.room)))}</section>`,
+comp:()=>`<section class=card><h2>All complaints</h2>${tbl(['Name','Type','ID','Date','Assigned','Location','Status'],db.complaints.map(c=>E(c.student_name,c.complaint_type,c.complaint_no,c.complaint_date,c.assigned_to,c.location,c.status)))}</section>`,
 pend:()=>`<section class=card><h2>Pending complaints</h2>${db.complaints.length?`<pre>${esc(db.complaints.map(c=>[c.name,c.type,c.id,c.cost,c.day,c.member,c.room].join(',')).join('\n'))}</pre>`:'<p class=mu>No pending complaints.</p>'}</section>`,
 done:()=>`<section class=card><h2>Complete a repair</h2><label>Repair ID<input id=rid inputmode=numeric></label>
  <p class=mu style="margin:0 0 6px">Items actually used (deducted from stock):</p><datalist id=il>${Object.keys(db.stock).map(k=>`<option value="${esc(k)}">`).join('')}</datalist>
@@ -90,14 +90,19 @@ async function raise(){
 }
 function chk(){const k=findItem($('#item').value),el=$('#av');
  if(!$('#item').value.trim())el.textContent='';else if(k){el.className='mu';el.textContent=`Available in stock · Quantity in stock: ${db.stock[k]}`}else{el.className='';el.style.color='var(--er)';el.textContent='Item is not available in stock. Please contact any Maintenance member.'}}
-function reqItem(){const k=findItem($('#item').value);if(!k)return flash('Item is not available in stock. Please contact any Maintenance member.','er');
- const d=$('#d').value;db.srd.push({name:ses.name,date:d,day:dayOf(d),item:k});save();flash('Item request saved successfully!','ok','prev')}
+async function reqItem(){const k=findItem($('#item').value);if(!k)return flash('Item is not available in stock. Please contact any Maintenance member.','er');
+ const {error}=await sb.from('srd_requests').insert({requested_by:ses.userId,item_name:k,quantity:1,purpose:'Requested from maintenance system'});
+ if(error)return flash('Request could not be saved: '+error.message,'er');
+ await loadSrdData();flash('Item request saved successfully!','ok','prev');render()}
 function addRow(){$('#items').insertAdjacentHTML('beforeend','<div class=ir style="margin-top:8px"><input list=il placeholder="Item"><input type=number min=0 placeholder="Qty"></div>')}
-function complete(){const id=+$('#rid').value,c=db.complaints.find(x=>x.id===id);if(!c)return flash('Repair ID not found!','er');const w=[];
- document.querySelectorAll('.ir').forEach(r=>{const n=r.children[0].value.trim(),q=+r.children[1].value;if(!n||!(q>0))return;const k=findItem(n);
-  if(!k){w.push(`${n} is not in the stock list`);return}if(db.stock[k]<q)w.push(`${k}: only ${db.stock[k]} in stock`);db.stock[k]=Math.max(0,db.stock[k]-q)});
- db.records.push({...c});db.complaints=db.complaints.filter(x=>x!==c);save();
- flash(`Repair ${id} completed successfully.`+(w.length?` Stock warnings: ${w.join('; ')}.`:''),w.length?'wa':'ok','comp')}
+async function complete(){const id=Number($('#rid').value);if(!Number.isInteger(id)||id<=0)return flash('Enter a valid Repair ID.','er');
+ const items=[];const warnings=[];
+ document.querySelectorAll('.ir').forEach(r=>{const n=r.children[0].value.trim(),q=Number(r.children[1].value);if(!n&&!q)return;if(!n||!Number.isInteger(q)||q<=0){warnings.push('Each repair item needs a valid quantity.');return}const k=findItem(n);if(!k)warnings.push(n+' is not in the stock list');else items.push({item_name:k,quantity:q})});
+ if(warnings.length)return flash(warnings.join(' '),'er');
+ const {error}=await sb.rpc('complete_repair',{p_complaint_no:id,p_items:items});
+ if(error)return flash('Repair could not be completed: '+error.message,'er');
+ await loadAdminData();flash('Repair '+id+' completed successfully.','ok','comp');render()}
+
 async function addStock(){const n=$('#sn2').value.trim(),q=parseInt($('#sq').value);if(!n||isNaN(q)||q<0)return flash('Enter an item and a quantity.','er');
  const k=findItem(n)||n;
  const newQty=(db.stock[k]||0)+q;
