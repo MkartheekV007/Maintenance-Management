@@ -32,8 +32,8 @@ function render(){
   <button class=role onclick="pick('member')"><b>3 · Member</b><span>Admin login: stock, complaints, completions</span></button></div>`;
  else{
   if(nt)h+=`<div class="note ${nt.k}">${esc(nt.m)}</div>`;
-  if(!ses.name)h+=ses.role==='member'?loginV():ses.role==='student'?`<section class=card><h2>Student details</h2><div class=row><label>ID<input id=sid></label><label>Name<input id=sn></label></div><button class=p onclick="setName($('#sn').value,'raise')">Continue</button></section>`
-   :`<section class=card><h2>SRD details</h2><label>SRD name<input id=sn></label><button class=p onclick="setName($('#sn').value,'req')">Continue</button></section>`;
+  if(!ses.name)h+=ses.role==='member'?loginV():ses.role==='student'?`<section class=card><h2>Student details</h2><div class=row><label>ID<input id=sid></label><label>Name<input id=sn></label></div><button class=p onclick="studentContinue()">Continue</button></section>`
+   :`<section class=card><h2>SRD login</h2><div class=row><label>ID<input id=lid></label><label>Password<input id=lpw type=password></label></div><button class=p onclick="login()">Login</button></section>`;
   else{
    h+=`<nav>${TABS[ses.role].map(t=>`<button class="${ses.tab===t[0]?'on':''}" onclick="tab('${t[0]}')">${t[1]}</button>`).join('')}</nav>`+V[ses.tab]();
   }}
