@@ -1,375 +1,66 @@
-const SUPABASE_URL = "https://flmzdktzswjjofpsclbc.supabase.co";
-const SUPABASE_KEY = "sb_publishable_ApoNq1biHliViu9G9t1LzQ_8KooRxt6";
-const { createClient } = window.supabase;
-const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const DUTIES = {
-  "2026-09-22":"Chhayank","2026-09-23":"Lutharshan","2026-09-24":"Charan",
-  "2026-09-25":"Sashank","2026-09-26":"murali","2026-09-27":"Aditya",
-  "2026-09-28":"Sathwik","2026-09-29":"Preetam","2026-09-30":"Chhayank",
-  "2026-10-01":"Lutharshan","2026-10-02":"Charan","2026-10-03":"Sashank",
-  "2026-10-04":"murali","2026-10-05":"Aditya","2026-10-06":"Sathwik",
-  "2026-10-07":"Preetam","2026-10-08":"Chhayank","2026-10-09":"Lutharshan",
-  "2026-10-10":"Charan","2026-10-11":"Sashank","2026-10-12":"murali",
-  "2026-10-13":"Aditya","2026-10-14":"Sathwik","2026-10-15":"Preetam"
-};
+const SEED={"stock":{"keyboard":0,"Projector remote":0,"headphone":0,"XLR small wire":0,"Monitor":0,"Pro fx cable":0,"Quest big speaker 1":0,"Quest Amp":0,"Line-in jack":0,"ProFX30V3 type d cable":0,"Mike WIRE(xlr)(white black )":0,"Quest big speaker 2":0,"CPU power chord":0,"ProFX30V3 Mixer":0,"HDMI Cable":0,"headphone jack wire":0,"MONITOR power chord":0,"Ahuja AMP":0,"speaker stand 1":0,"VGA CABLE Monitor":0,"Chair 2":0,"mouse":0,"Jack to Jack":0,"MIKE Stand":0,"CPU":0,"SETUP BOX POWER CABLE":0,"senior biometric":0,"PROJECTOR":0,"Mike 1":0,"TV HDMI":0,"Vga 2 HDMI":0,"Mic":0,"Extention To AVC":0,"Line in to XLR":0,"mic stand":0,"Podium":0,"Ahuja Podium mike holder":0,"speaker stand 2":0,"SETUP BOX":0,"MiKE5":0,"TV Screen":0,"Light remote":0,"quest small speaker":0,"Mike WIRE(xlr)(white red)":0,"Mike 2":0,"senior biometric power cable":0,"6 Socket Extention Box":0,"skrew driver kit 1":0,"Podium mike":0,"2 Way Extention Box":0,"HDMI Splitter (Black)":0,"speaker wire 2":0,"Mike 4":0,"speaker wire 1":0,"8 socket extension box":0,"Mike 3":0,"PROJECTOR (Old)":0,"Mic WIRE(Xlr)(White Pink)":0,"Light Wire":0,"EP to PHONE (Blue)":0,"TV POWER CABLE":0,"Podium Mike Wire":0,"Projector Power Cable":0,"Hdmi 2 Hdmi Cable":0,"Mic Stand Base":0,"Soldering Machine 2":0,"Soldering Machine 1":0,"AVC Table":0,"Jack to Xlr wire":0,"Podium mic Stand":0,"Old Headphones":0,"Line-in Extendel":0,"Old hostel podium mic":0,"Line in Jack":0,"1 Socket Extention":0,"Jack Wire":0,"Maintenance cupboard":0,"XLR white":0,"Projector Screen 1":0,"Projector Screen 2":0,"EP to PHONO (BLACK)":0,"Measuring Tape":0,"Scissors":0,"pipes":0,"ahuja":0},"duties":[["Chhayank","Narendra Babu","Dinakar","Tuesday","09/22/26"],["Lutharshan","Revanth","Anirudh","Wednesday","09/23/26"],["Charan","Harsha","Lohit","Thursday","09/24/26"],["Sashank","Chaitanya","Jai Kiran","Friday","09/25/26"],["murali","Rushi","Dinakar","Saturday","09/26/26"],["Aditya","Narendra","Anirudh","Sunday","09/27/26"],["Sathwik","Narendra Babu","Lohit","Monday","09/28/26"],["Preetam","Revanth","Jai Kiran","Tuesday","09/29/26"],["Chhayank","Harsha","Dinakar","Wednesday","09/30/26"],["Lutharshan","Chaitanya","Anirudh","Thursday","10/01/26"],["Charan","Rushi","Lohit","Friday","10/02/26"],["Sashank","Narendra","Jai Kiran","Saturday","10/03/26"],["murali","Narendra Babu","Dinakar","Sunday","10/04/26"],["Aditya","Revanth","Anirudh","Monday","10/05/26"],["Sathwik","Harsha","Lohit","Tuesday","10/06/26"],["Preetam","Chaitanya","Jai Kiran","Wednesday","10/07/26"],["Chhayank","Rushi","Dinakar","Thursday","10/08/26"],["Lutharshan","Narendra","Anirudh","Friday","10/09/26"],["Charan","Narendra Babu","Lohit","Saturday","10/10/26"],["Sashank","Revanth","Jai Kiran","Sunday","10/11/26"],["murali","Harsha","Dinakar","Monday","10/12/26"],["Aditya","Chaitanya","Anirudh","Tuesday","10/13/26"],["Sathwik","Rushi","Lohit","Wednesday","10/14/26"],["Preetam","Narendra","Jai Kiran","Thursday","10/15/26"],["Chhayank","Narendra Babu","Dinakar","Friday","10/16/26"],["Lutharshan","Revanth","Anirudh","Saturday","10/17/26"],["Charan","Harsha","Lohit","Sunday","10/18/26"],["Sashank","Chaitanya","Jai Kiran","Monday","10/19/26"],["Murali","Rushi","Dinakar","Tuesday","10/20/26"],["Aditya","Narendra","Anirudh","Wednesday","10/21/26"],["Sathwik","Narendra Babu","Lohit","Thursday","10/22/26"],["Preetam","Revanth","Jai Kiran","Friday","10/23/26"],["","Harsha","","Saturday","10/24/26"],["","Chaitanya","","Sunday","10/25/26"],["","Rushi","","Monday","10/26/26"],["","Narendra","","Tuesday","10/27/26"],["","Narendra Babu","","Wednesday","10/28/26"],["","Revanth","","Thursday","10/29/26"],["","Harsha","","Friday","10/30/26"],["","","","Saturday","10/31/26"],["","","","Sunday","11/01/26"],["","","","Monday","11/02/26"]],"admins":[["Chhayank","101"],["Lutharshan","102"],["Charan","103"],["Sashank","104"],["murali","105"],["Aditya","106"],["Sathwik","107"],["Preetam","108"]],"records":[["muralidhar","Electric","100","0","monday","muralidhar","a9"],["muralidhar","Carpentry","100","0","monday","muralidhar","a5"],["muralidhar","Electric","100","0","monday","muralidhar","a9"],["muralidhar","Plumbing","100","0","wed","Not Found","A14 A05 Sides Washroom 2 - Tap"],["muralidhar","Plumbing","100","0","wed","Not Found","A14 Side Tap 2"]],"srd":[["muralidhar","mic","2","2"],["muralidhar","mic","2","2"],["muralidhar","mic","3","monday"],["muralidhar","mic","1","monday"],["muralidhar","tape","2","wed"]]};
+const SUPABASE_URL="https://flmzdktzswjjofpsclbc.supabase.co";
+const SUPABASE_KEY="sb_publishable_ApoNq1biHliViu9G9t1LzQ_8KooRxt6";
+const {createClient}=window.supabase;
+const sb=createClient(SUPABASE_URL,SUPABASE_KEY);
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const today=()=>new Date().toLocaleDateString("en-CA");
+const dayOf=d=>d?new Date(d+"T00:00:00Z").toLocaleDateString("en-US",{weekday:"long",timeZone:"UTC"}):"";
+const dutyOf=d=>{if(!d)return"";const[y,m,x]=d.split("-"),r=SEED.duties.find(z=>z[4]===m+"/"+x+"/"+y.slice(2));return r?r.slice(0,3).map(s=>s.trim()).filter(Boolean).join(" & "):""};
+const findItem=n=>Object.keys(db.stock).find(k=>k.toLowerCase()===String(n).trim().toLowerCase());
+let db={stock:{...SEED.stock},duties:SEED.duties,admins:SEED.admins,srd:[],records:[],complaints:[]};
+let ses={role:"",name:"",roll:"",userId:"",tab:""},nt=null;
+const TABS={student:[["raise","Raise complaint"],["upd","My repair updates"]],srd:[["req","Request item"],["prev","Previous requests"]],member:[["dash","Summary"],["comp","Complaints"],["pend","Pending (raw)"],["done","Complete repair"],["stock","Stock"]]};
+const flash=(m,k,tab)=>{nt={m,k};if(tab)ses.tab=tab;render()};
+const pick=r=>{ses={role:r,name:"",roll:"",userId:"",tab:""};nt=null;render()};
+const out=async()=>{await sb.auth.signOut();ses={role:"",name:"",roll:"",userId:"",tab:""};nt=null;render()};
+const tab=t=>{ses.tab=t;nt=null;render()};
+const tbl=(h,rows)=>rows.length?"<div class=tw><table><tr>"+h.map(x=>"<th>"+x+"</th>").join("")+"</tr>"+rows.map(r=>"<tr>"+r.map(c=>"<td>"+c+"</td>").join("")+"</tr>").join("")+"</table></div>":"<p class=mu>Nothing here yet.</p>";
+const E=(...a)=>a.map(esc);
+async function loadAdminData(){const c=await sb.from("complaints").select("*").order("complaint_no",{ascending:false});const st=await sb.from("stock").select("*").order("item_name");const sr=await sb.from("srd_requests").select("*").order("request_no",{ascending:false});if(c.error)throw c.error;if(st.error)throw st.error;db.complaints=(c.data||[]).filter(x=>x.status!=="FIXED");db.records=(c.data||[]).filter(x=>x.status==="FIXED");db.stock={};(st.data||[]).forEach(x=>db.stock[x.item_name]=x.quantity);db.srd=sr.error?[]:(sr.data||[])}
+async function loadSrdData(){const st=await sb.from("stock").select("*").order("item_name");const sr=await sb.from("srd_requests").select("*").eq("requested_by",ses.userId).order("request_no",{ascending:false});if(st.error)throw st.error;if(sr.error)throw sr.error;db.stock={};(st.data||[]).forEach(x=>db.stock[x.item_name]=x.quantity);db.srd=sr.data||[]}
+async function loadStudentHistory(){const r=await sb.rpc("track_public_complaints",{p_registration_no:ses.roll});if(r.error)throw r.error;db.complaints=(r.data||[]).filter(x=>x.status!=="FIXED");db.records=(r.data||[]).filter(x=>x.status==="FIXED")}
 
-let currentRole = null;
-let currentUser = null;
-const $ = id => document.getElementById(id);
 
-function today(){ return new Date().toISOString().slice(0,10); }
-function dayName(iso){ return new Date(iso+"T12:00:00").toLocaleDateString("en-IN",{weekday:"long"}); }
-function esc(v){ return String(v ?? "").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
-
-function showToast(message,type="ok"){
-  const el=document.createElement("div");
-  el.className="toast "+type;
-  el.textContent=message;
-  $("toastArea").prepend(el);
-  setTimeout(()=>el.remove(),4500);
+function render(){
+ let h=`<header><b>Maintenance Management</b>${ses.role&&ses.name?`<span class=who>${esc(ses.name)} · ${ses.role}</span>`:''}${ses.role?'<button class=g onclick="out()">Exit</button>':''}</header><main>`;
+ if(!ses.role)h+=`<div class=hero><h1>Welcome to<br>Maintenance Management System</h1><img class=logo src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAvgAAADZAQAAAAB9Nnn0AAANFElEQVR42u1cTageVxl+znwnN1+bNHdaa3vRkkxCdFEDXlAkiJrT0oXRLoI0kI32W7gogiULUUuL9ygRunARWhTdfS6ULroIumhX9YhFqwheJJRgqp3SIhGhmZQkTu+db46L+Tk/c35mUsRNZnPz3TvzzjPPeX+e953zhUj8T48Et+3ftn/b/v/VflW/WXBZX71avfHkS2/wKfaJvLnAjX0AcOdS+/3r/MZi99wx4MHvDzGtHIZufiIf/nK9gCz6D1I7epBbLlBb0j6uONGvywS9/XL0Q8tn7d/c2HCeuIkEac+y/hcWvMH7C+uGP/JjydVSjOUH2Guys+0zLjX8UyrB+8an1WbAP3v+wUfzA2T6h4uek2bQ+TcOEbH/js6CDz418S8nEKSHwHu+k+Z+/DF+dILO+85JTfzFBH6gAmrFAxh0/OWUxLLjXIoBCTr+ago/KkL8y8YBLf8YAdZffcJ38aH2zDqQO6Wef9zr632QIuY9SGDyL/mE9cX19ue29wxqxe+0YxVdqbmFX18pFr8BHwTa0P29+OP8tGiuh0PQwD+NqiJCP5iNv5zEz/XIgxJu468m8VPbPhfL/6gn8SMjl6zBxi8n8QMeXt4h/mn+g2V4eTcG+EehNh1I3CL+MXcqrZptHYsh/nwSP1Uwel34r0zip7Y0mcP9b73+Nu52JabMTfzVJH7AkSOYnW380wIMIgSDOvBPHBbkIfe5Fx+Qf4pCRgWS5f9sAv8JyhCfLIh/xDFHlUTLm4U/n5QpQvAJXPiLCfzsQhIea0wt/FMkYhLMPtSJv5pg/wAgwuJkiL+ewH9ptzEDcTLELyfwn3Hkaaw/sPP/hOb/kywkaBg+YPySxQWU84j7g1oYxHh+WIqKRtx/gD8fTc8aqsD4JfHU38Lmx5vC9mAnEMD7PfhLmx/it7CCJNPq75QA2wj6W+rBX4/2n03U3O/Oi9H6LaOPtHAoQDNt9COZmSCeffjuo8+dPHJk/vCRI+oky/6WPZ/xTaoEIHBC+dud0nVM77/u5079kNzwrG/qJCbA/7dc9QJfHak/82j83tH4rTD8ZM8S4/DH6UqWKu76BPTZsfq5jPsn6+JOZX8iMBJ/Fc9vDwBAwgH0Ce6+0fp/hEScAUDNoUF7AmPxj5GIvE2QFzo0fh1xS/0LA7Bi7fyoLfWRPG1bFuHUYz1thtH8jFOGDUl5l77PT+jvRlQwqjJz0wSxCfwUcf4TLfPzPqJH8lPG+SfcrCz3Tul/x1YwrnAsMIGfekT9Wij8LFCicevz7c5+3qeKsfzEJjpdVua921NM4WdMfZ8rV84QjCAHP8s4PxRIRB/H81uYn4yaXokmWhbT+Cni/CTqwjToPi77pckPaQ9uquOaXCs24z2Dg/8KYzxWJt94uQGzNnF+VTv4SazfcGD260UedU+vfwozjmoLPwOpVrRxHuoUCH77VoBxd0RIOqsac321+S0hhJA7SH9kE/ovJqzusKqQAdU8kFMKt/8L17l2K00obUuR8PaeqZv/3MmPMK+UlZ18JJz43QHGYvyDNtqqIn7llLr5L535R5gJjlS0ygDQxB83Hv5HVTBJW9DUP3vx8F+P4qeqmoWa+5V3MaZ+OdeXglDavGBJ/cImdfPjrmB2fFUVzY1VFRH/ScP1y76c0goAksw/ejH5/7puSsTaclK19Zf5hbeJ/7WwRBzknwo5IHvYNSL+z/T7svD69q0LIQGvNv3/d3qAiZh/knMVzXRWSkT4Z+EAE+b4SD5DqzzSeJr8CxHswZipHsi5uK734Y/7J4Hkldm2iFh9F5taphXRirNGaR6ZPBrrm7LgudYdOcq6yiJ9p8FPIebBZ2WW/XliQKkRW1+mr1UsP3BS1saSVojFl1jTbhzlX1rCp0SYf6obKOP6jczTKjZ30fmvIIj2sPH5XonNLNLW2vzzUIDZd5xdfll/LBHnXzexGctva09/ORXabXmYfwIwFY9yEDfMxr9bv4INdVuJMP8SEFoF41bPQ+xXgYwCuBQZG9n8awFGHSMlw5sqc10rxOK3Adg+Qp70jUp3uckPM+dv7hdPNv61fl2L1vAJtQgiOEfbHod/3iahUh8vNPaZpxMMHDZ+guP9g7JI/CbmPcQo/Lw7bWc48mLuMUHA/S19yAwbaQT/PmNhJbz4C81AFqgWFv6DAN4Nu78//wN8v02EiT97FMC/+o/XMYr/DQ8bQ0chTwDYycPNQgB/noT5SZaG0N4eh19lhYKY4wb7iWYcTQKqY0K4b2iZfrdS9zg5xN/U0tfD4kfjJweEPqkbVjDTxJ8755SBmVpq1GgGgHOg6RsCM2UAOA4AWPHGMDkNANhzCscuYu2U7hZq//AJ/bVU894qAba6OZ7xoqouurIwfIGlnO2QlJb/LMwZXo1ujm3x0+77kUv/8G8wP7EEFA35J22NXHIsbRnwf5V1RBJa30K5RR4ck9r5P9yDDbLfzSA/Q/x6gPEAP0JxUfj5Ufhpe03iKqh0yM+nWyArHtnykfT1mzKYAdb70jPDDr9QebmK8NNRUpkNEB8qLO2v3erIhWd+qvipDIK58vDU7z/VK0l/79Wo/NYZYMZz+lQ0DemSkP9oWYfTNBOe/lpy4i/8ZVS/JU2AFblPP5d9fY7t+EvUErL+4WogYTnx+/+aXni3R/DDO4Ads5QXgfzwBjj3Ss9yTP9eZWVgBqR0wE6owhdD/rvPs0Wovl/ox7mr4R7NeQg/6d2/k4iu9RUITAYc+TlVF2nmUt/8RwJ5poTbMpqfC2WgNTNj0novpGHeWagMzQc+OvfoW6GX9eOZXcE0/FdEn5Ul9K9KuPyn6EhneuX42xm7gmn4f64ZYYBkEf+RmoH26c5cRE7gnh9LblXx7VH1UUeRnN1FAa7LP/Xn9xKudnYtAVyboB+a0F9fVrw0M7bi53ytXSjMfMFRvQC3vtrSvg6yDmzvle9e/c7uli6/2i9jJQCpB4OE4XFISku/SdmsxTHgLNE+wxa3RCph7D3WB/qt4+NV4MVg3u3nwimm6J/2NuQC8G//TpFaW5Z8nP5X+DMAazlQtSmYuy/qEtw83B8N+c/RbrcRJ3z87wf6nV1peH2H+Dc62bfMB49/XGWAbuvnfDQ/WgJ4FAC235oRctiokp9RNot5dEJn1hfKlPY401jZbzelp7ka9tD4jMPwn06/JY37ABetbyECyRdUDhy50zhRa8T6ZpQsmtJqv5ne1/YrBYBqZkstPz+FNeuZCa0H0o4H24lbinFb+VOXf0rRzkYIv8vy/bxdkVTrSelU/wTw0SYFsP2m/dkSu1pVd0jntq03+em0pOgz4j/d3c8+oOJ9TnOqo48wPz9bff/aujaz+Hmgi7cUAE6UDn7OnvXzI+z6k+2ahfUxtDu5Ml9RnJ16MT6foV1OEWbtIGfRZu1NrdIZBZqyq3pgOPMzku6U9LjBz1qG9tuICwC47th3sgc33/5JJD+D9DXplPEAHwaAG1wVAd52kHpilc8/lYf0LQB00vxt8Zpu/3MAULNuM6ZsAK2Yqat/ubOI+I/k7a8OGfsKk+auZ/ul3SoGsmYxor5LmfeX7NVOfoj3JeC7zdUl0Oxj8s1I1w37Pf6cD/pcNVA90HvwocqGYLd6bv9H2v9L/lT9+VPNjxt9vr0yG2RBPqK+A3MFY6nmh79q3UZ0ub+KftnB4z9U0XhTzQ/beJUXlKZaRGbUHn2bKFw3hi276OJ3/0A7uHZ6Ofyn5q4xx0KJE9aeX7X3pZDCZX/dnf+J4l9rHbZVe5K157dfgeP3kD9xAGB8hD40aVS92xXlEXn7aGTZoC7xEgDg4zwwCcmYd2JhjOC7fRVraL/g/qHFtfueYgDw45+N0IetRLTlfd/trbX3X5dSlgx7/lJtXWty0d5ng/p/yzGB1VyEqvVddHBq8Nnf2Z3IwODYBX1ISurif+5qphIYs0vCABDO8bzoVOpOOL6YY1G0Fx+16T+Ut04rXJeF9I+U9dnzQ/zd1bMGyf1SSikr93A2on/w1tf+sF4YqNU61A3gL5qhzl2tgO4/VMMv/4pHX0utSVX/rwUR6v8qEBq4jRB+44WFQNXarwb849IBrnzluHPwoNJRbz/To5ZtZGWmUpZJ7MVviqZMAsBeru5TOqa8iUpfGv6jWfeCuT6IgziKg7ir/+PuO7rObG/0e4Ckgf4i4Tr++kBWNreTAndjjhJ3KyYXwDGVI5sff+RYu+Tx/1SL+tYHP7+n6xt/yI/yV3GSr/r1XTEk27BeFOwAq4Xb/3/Q5lvNf0r0u4cOy2vyqrx2/toL2oWP6696ujZ5f2T+oL0I0puTL/HT66cfktul3ifpx06brV82bB8G+LqUkO8AOHfYxB9ufvZZL6SuN3627cYvpZRP/8N+ifWf7h9vPv2by9++/D355OWr0nesvnISR58jAOiRk0cfeeTk0V+cph977J7HpSS3//+02/Zv279t33P8F6o76kUkdZP8AAAAAElFTkSuQmCC" alt="NDG logo"><p class=mu>Choose how you are using the system.</p></div><div class=roles>
+  <button class=role onclick="pick('student')"><b>1 · Student</b><span>Raise a repair complaint and track its status</span></button>
+  <button class=role onclick="pick('srd')"><b>2 · SRD</b><span>Check stock and request items</span></button>
+  <button class=role onclick="pick('member')"><b>3 · Member</b><span>Admin login: stock, complaints, completions</span></button></div>`;
+ else{
+  if(nt)h+=`<div class="note ${nt.k}">${esc(nt.m)}</div>`;
+  if(!ses.name)h+=ses.role==='member'?loginV():ses.role==='student'?`<section class=card><h2>Student details</h2><div class=row><label>ID<input id=sid></label><label>Name<input id=sn></label></div><button class=p onclick="setName($('#sn').value,'raise')">Continue</button></section>`
+   :`<section class=card><h2>SRD details</h2><label>SRD name<input id=sn></label><button class=p onclick="setName($('#sn').value,'req')">Continue</button></section>`;
+  else{
+   h+=`<nav>${TABS[ses.role].map(t=>`<button class="${ses.tab===t[0]?'on':''}" onclick="tab('${t[0]}')">${t[1]}</button>`).join('')}</nav>`+V[ses.tab]();
+  }}
+ $('#app').innerHTML=h+'</main>';
 }
+async function studentContinue(){const roll=$("#sid").value.trim(),name=$("#sn").value.trim();if(!roll||!name)return flash("Please enter your ID and name.","er");ses.roll=roll;ses.name=name;ses.tab="raise";try{await loadStudentHistory()}catch(e){}render()}
+const loginV=()=>`<section class=card><h2>Admin login</h2><div class=row><label>ID<input id=lid inputmode=numeric></label><label>Password<input id=lpw type=password></label></div>
+ <p class=mu style="font-size:13px">admins.csv has no password column, so any non-empty password is accepted until one is added (as a third column).</p><button class=p onclick="login()">Login</button></section>`;
+async function login(){const id=$("#lid").value.trim(),pw=$("#lpw").value;if(!id||!pw)return flash("Invalid Login!","er");let email=id;if(ses.role==="member"&&id==="24040112017")email="kartheekvishwanadh@gmail.com";else if(ses.role==="member")return flash("Invalid Login!","er");const {data,error}=await sb.auth.signInWithPassword({email,password:pw});if(error||!data.user)return flash("Invalid Login!","er");const {data:p,error:pe}=await sb.from("profiles").select("*").eq("id",data.user.id).single();const expected=ses.role==="member"?"admin":"srd";if(pe||!p||p.role!==expected){await sb.auth.signOut();return flash("Invalid Login!","er")}ses.name=p.full_name;ses.userId=p.id;ses.tab=ses.role==="member"?"dash":"req";nt={m:"Login successful. Welcome "+p.full_name+"!","k":"ok"};try{if(ses.role==="member")await loadAdminData();else await loadSrdData()}catch(e){nt={m:"Login succeeded, but data could not be loaded.","k":"er"}}render()};
 
-function showView(name){
-  ["loginView","studentView","srdView","adminView"].forEach(x=>$(x).classList.add("hidden"));
-  $(name).classList.remove("hidden");
-}
-
-function setUserBar(){
-  const bar=$("userBar");
-  if(!currentRole){
-    bar.classList.add("hidden");
-    bar.innerHTML="";
-    return;
-  }
-  bar.classList.remove("hidden");
-  bar.innerHTML='<div><strong>'+esc(currentUser.full_name)+'</strong><div class="user-role">'+esc(currentRole.toUpperCase())+'</div></div><button class="ghost" id="logoutBtn">Log out</button>';
-  $("logoutBtn").onclick=async()=>{
-    await db.auth.signOut();
-    currentRole=null;
-    currentUser=null;
-    setUserBar();
-    showView("loginView");
-  };
-}
-
-function setDates(){
-  ["complaintDate","srdDate"].forEach(id=>{
-    const el = $(id);
-    if(el) el.value = today();
-  });
-}
-
-async function getProfile(userId){
-  const {data,error}=await db.from("profiles").select("*").eq("id",userId).single();
-  if(error) throw error;
-  return data;
-}
-
-async function loadSession(){
-  const {data:{session}}=await db.auth.getSession();
-  if(!session){
-    setDates();
-    showView("loginView");
-    return;
-  }
-  try{
-    currentUser=await getProfile(session.user.id);
-    currentRole=currentUser.role;
-    await enterPortal();
-  }catch(error){
-    await db.auth.signOut();
-    showToast(error.message || "Could not load your profile.","error");
-    showView("loginView");
-  }
-}
-
-async function enterPortal(){
-  setUserBar();
-  setDates();
-  if(currentRole==="student"){
-    showView("studentView");
-    await renderStudent();
-  }else if(currentRole==="srd"){
-    showView("srdView");
-    await renderSRD();
-  }else if(currentRole==="admin"){
-    showView("adminView");
-    await renderAdmin();
-  }else{
-    await db.auth.signOut();
-    showToast("Your account does not have a valid role.","error");
-    showView("loginView");
-  }
-}
-
-async function login(email,password,selectedRole){
-  const {data,error}=await db.auth.signInWithPassword({email,password});
-  if(error){
-    showToast(error.message || "Sign in failed.","error");
-    return;
-  }
-  try{
-    currentUser=await getProfile(data.user.id);
-    currentRole=currentUser.role;
-    if(currentRole!==selectedRole){
-      await db.auth.signOut();
-      currentUser=null;
-      currentRole=null;
-      showToast("This account is registered as "+currentRoleLabel(currentRole)+". Select the correct role and sign in again.","error");
-      return;
-    }
-    await enterPortal();
-  }catch(error){
-    await db.auth.signOut();
-    showToast(error.message || "Could not load your profile.","error");
-  }
-}
-
-function currentRoleLabel(role){
-  return role==="student"?"Student":role==="srd"?"SRD":"Admin";
-}
-
-async function renderStockDatalist(){
-  const {data,error}=await db.from("stock").select("item_name").order("item_name");
-  if(error){ showToast(error.message,"error"); return; }
-  $("stockNames").innerHTML=(data||[]).map(x=>'<option value="'+esc(x.item_name)+'">').join("");
-}
-
-async function renderStudent(){
-  const {data,error}=await db.from("complaints")
-    .select("*")
-    .eq("student_id",currentUser.id)
-    .order("created_at",{ascending:false});
-  if(error){showToast(error.message,"error");return;}
-  const mine=data||[];
-  $("studentTotal").textContent=mine.length;
-  $("studentPending").textContent=mine.filter(c=>c.status==="PENDING"||c.status==="IN PROGRESS").length;
-  $("studentDone").textContent=mine.filter(c=>c.status==="FIXED").length;
-  $("studentComplaints").innerHTML=mine.length
-    ? '<div class="table-wrap"><table><thead><tr><th>ID</th><th>Type</th><th>Where</th><th>Date</th><th>Assigned</th><th>Status</th></tr></thead><tbody>'
-      +mine.map(c=>'<tr><td class="num">#'+c.complaint_no+'</td><td>'+esc(c.complaint_type)+'</td><td>'+esc(c.location)+'</td><td>'+esc(c.complaint_date)+'</td><td>'+esc(c.assigned_to||"—")+'</td><td><span class="pill '+statusClass(c.status)+'">'+esc(statusLabel(c.status))+'</span></td></tr>').join("")
-      +'</tbody></table></div>'
-    : '<div class="empty">You have not sent any complaints yet.</div>';
-}
-
-function statusClass(status){
-  if(status==="FIXED") return "done";
-  if(status==="REJECTED") return "error";
-  return "pending";
-}
-
-function statusLabel(status){
-  return status==="IN PROGRESS"?"In progress":status==="FIXED"?"Fixed":status==="REJECTED"?"Rejected":"Pending";
-}
-
-async function renderSRD(){
-  await renderStockDatalist();
-  const {data,error}=await db.from("srd_requests")
-    .select("*")
-    .eq("requested_by",currentUser.id)
-    .order("created_at",{ascending:false});
-  if(error){showToast(error.message,"error");return;}
-  $("srdRequests").innerHTML=(data||[]).length
-    ? '<div class="table-wrap"><table><thead><tr><th>Item</th><th>Qty</th><th>Date</th><th>Status</th></tr></thead><tbody>'
-      +(data||[]).map(r=>'<tr><td>'+esc(r.item_name)+'</td><td class="num">'+r.quantity+'</td><td>'+esc(new Date(r.created_at).toLocaleDateString("en-IN"))+'</td><td><span class="pill '+statusClass(r.status==="APPROVED"||r.status==="ISSUED"?"FIXED":r.status)+'">'+esc(r.status)+'</span></td></tr>').join("")
-      +'</tbody></table></div>'
-    : '<div class="empty">No requests yet.</div>';
-}
-
-async function renderAdmin(){
-  const [complaintsRes,stockRes,requestsRes]=await Promise.all([
-    db.from("complaints").select("*").order("created_at",{ascending:false}),
-    db.from("stock").select("*").order("item_name"),
-    db.from("srd_requests").select("*").order("created_at",{ascending:false})
-  ]);
-  if(complaintsRes.error){showToast(complaintsRes.error.message,"error");return;}
-  if(stockRes.error){showToast(stockRes.error.message,"error");return;}
-  if(requestsRes.error){showToast(requestsRes.error.message,"error");return;}
-
-  const complaints=complaintsRes.data||[];
-  const stock=stockRes.data||[];
-  const requests=requestsRes.data||[];
-  const pending=complaints.filter(c=>c.status==="PENDING"||c.status==="IN PROGRESS");
-  const fixed=complaints.filter(c=>c.status==="FIXED");
-
-  $("adminPendingCount").textContent=pending.length;
-  $("adminDoneCount").textContent=fixed.length;
-  $("adminStockCount").textContent=stock.length;
-  $("adminRequestCount").textContent=requests.length;
-  $("pendingBadge").textContent=pending.length+" pending";
-
-  $("pendingList").innerHTML=pending.length
-    ? pending.map(jobHTML).join("")
-    : '<div class="empty">Nothing is waiting. New complaints will appear here.</div>';
-
-  $("stockTable").innerHTML='<div class="table-wrap"><table><thead><tr><th>Item</th><th>In stock</th></tr></thead><tbody>'
-    +stock.map(s=>'<tr><td>'+esc(s.item_name)+'</td><td class="num '+(s.quantity===0?"danger":"")+'">'+s.quantity+'</td></tr>').join("")
-    +'</tbody></table></div>';
-
-  $("adminRequests").innerHTML=requests.length
-    ? '<div class="table-wrap"><table><thead><tr><th>SRD</th><th>Item</th><th>Qty</th><th>Date</th><th>Status</th></tr></thead><tbody>'
-      +requests.map(r=>'<tr><td>'+esc(r.requested_by)+'</td><td>'+esc(r.item_name)+'</td><td>'+r.quantity+'</td><td>'+esc(new Date(r.created_at).toLocaleDateString("en-IN"))+'</td><td>'+esc(r.status)+'</td></tr>').join("")
-      +'</tbody></table></div>'
-    : '<div class="empty">No SRD requests yet.</div>';
-}
-
-function jobHTML(c){
-  const items=[0,1,2].map(i=>'<div class="item-grid"><input id="item-'+c.id+'-'+i+'" placeholder="Item used"><input id="qty-'+c.id+'-'+i+'" type="number" min="1" placeholder="Qty"></div>').join("");
-  return '<article class="job"><div class="job-head"><span class="num">#'+c.complaint_no+'</span><span class="job-title">'+esc(c.complaint_type)+'</span><span>·</span><span>'+esc(c.location)+'</span></div><p class="meta">'+esc(c.details)+'<br>'+esc(c.complaint_date)+' · assigned to '+esc(c.assigned_to||"Unassigned")+'</p><div class="details-box"><div class="item-grid-label"><strong>Items used from stock</strong></div>'+items+'<div class="complete-actions"><label>Cost<input id="cost-'+c.id+'" type="number" min="0" step="0.01" value="0"></label><button class="primary" onclick="completeRepair(\''+c.id+'\')">Mark as fixed</button></div></div></article>';
-}
-
-async function completeRepair(id){
-  const {data:c,error}=await db.from("complaints").select("*").eq("id",id).single();
-  if(error||!c){showToast(error?.message||"Complaint not found.","error");return;}
-
-  const used=[];
-  for(let i=0;i<3;i++){
-    const input=$("item-"+id+"-"+i);
-    const qtyInput=$("qty-"+id+"-"+i);
-    if(!input||!qtyInput) continue;
-    const item=input.value.trim();
-    const qty=Math.max(0,parseInt(qtyInput.value||"0",10));
-    if(!item||!qty) continue;
-
-    const {data:stockRows,error:stockError}=await db.from("stock").select("*").ilike("item_name",item).limit(1);
-    if(stockError){showToast(stockError.message,"error");return;}
-    const stock=stockRows?.[0];
-    if(!stock){showToast("Stock item not found: "+item,"error");continue;}
-    if(stock.quantity<qty){
-      showToast("Only "+stock.quantity+" of "+stock.item_name+" is in stock.","warn");
-      continue;
-    }
-    const {error:updateStockError}=await db.from("stock").update({quantity:stock.quantity-qty,updated_at:new Date().toISOString()}).eq("id",stock.id);
-    if(updateStockError){showToast(updateStockError.message,"error");return;}
-    used.push({item_name:stock.item_name,quantity:qty});
-  }
-
-  const cost=Math.max(0,Number($("cost-"+id).value)||0);
-  const {error:updateError}=await db.from("complaints").update({
-    status:"FIXED",
-    completed_at:new Date().toISOString(),
-    completed_by:currentUser.id,
-    repair_items:used,
-    repair_cost:cost
-  }).eq("id",id);
-
-  if(updateError){showToast(updateError.message,"error");return;}
-  await renderAdmin();
-  showToast("Repair #"+c.complaint_no+" marked as fixed.");
-}
-
-$("loginForm").addEventListener("submit",async e=>{
-  e.preventDefault();
-  const email=$("ident").value.trim();
-  const password=$("password").value;
-  const role=document.querySelector(".role-tab.active").dataset.role;
-  if(!email||!password){showToast("Enter your email and password.","error");return;}
-  await login(email,password,role);
-});
-
-document.querySelectorAll(".role-tab").forEach(btn=>btn.addEventListener("click",()=>{
-  document.querySelectorAll(".role-tab").forEach(x=>x.classList.remove("active"));
-  btn.classList.add("active");
-  $("identLabel").textContent="Email";
-  $("ident").placeholder="Enter your email";
-  $("ident").inputMode="email";
-}));
-
-$("complaintForm").addEventListener("submit",async e=>{
-  e.preventDefault();
-  const iso=$("complaintDate").value;
-  const location=$("complaintRoom").value.trim();
-  const details=$("complaintDetails").value.trim();
-  if(!location){showToast("Please enter where the problem is.","error");return;}
-
-  const {error}=await db.from("complaints").insert({
-    student_id:currentUser.id,
-    complaint_date:iso,
-    complaint_type:$("complaintType").value,
-    location,
-    details,
-    assigned_to:DUTIES[iso]||null,
-    status:"PENDING"
-  });
-  if(error){showToast(error.message,"error");return;}
-  e.target.reset();
-  setDates();
-  await renderStudent();
-  showToast("Complaint submitted successfully.");
-});
-
-$("srdForm").addEventListener("submit",async e=>{
-  e.preventDefault();
-  const item=$("srdItem").value.trim();
-  if(!item){showToast("Enter an item.","error");return;}
-
-  const {data:stock,error:stockError}=await db.from("stock").select("*").ilike("item_name",item).limit(1);
-  if(stockError){showToast(stockError.message,"error");return;}
-  if(!stock?.length){showToast("That item is not in the stock list.","error");return;}
-  if(stock[0].quantity<=0){showToast(item+" is not in stock.","error");return;}
-
-  const {error}=await db.from("srd_requests").insert({
-    requested_by:currentUser.id,
-    item_name:stock[0].item_name,
-    quantity:1,
-    purpose:"Maintenance item request"
-  });
-  if(error){showToast(error.message,"error");return;}
-  e.target.reset();
-  setDates();
-  await renderSRD();
-  showToast("Request submitted.");
-});
-
-$("stockForm").addEventListener("submit",async e=>{
-  e.preventDefault();
-  const item=$("stockItem").value.trim();
-  const qty=parseInt($("stockQty").value||"0",10);
-  if(!item||qty<0){showToast("Enter a valid item and quantity.","error");return;}
-
-  const {data:existing,error:findError}=await db.from("stock").select("*").ilike("item_name",item).limit(1);
-  if(findError){showToast(findError.message,"error");return;}
-
-  let error;
-  if(existing?.length){
-    error=(await db.from("stock").update({
-      quantity:existing[0].quantity+qty,
-      updated_at:new Date().toISOString()
-    }).eq("id",existing[0].id)).error;
-  }else{
-    error=(await db.from("stock").insert({item_name:item,quantity:qty})).error;
-  }
-  if(error){showToast(error.message,"error");return;}
-  e.target.reset();
-  await renderAdmin();
-  await renderStockDatalist();
-  showToast("Stock updated.");
-});
-
-$("passwordForm").addEventListener("submit",async e=>{
-  e.preventDefault();
-  const newPw=$("newPassword").value;
-  const again=$("againPassword").value;
-  if(newPw.length<8||newPw!==again){
-    showToast("New passwords must match and contain at least 8 characters.","error");
-    return;
-  }
-  const {error}=await db.auth.updateUser({password:newPw});
-  if(error){showToast(error.message,"error");return;}
-  e.target.reset();
-  showToast("Password changed successfully.");
-});
-
-db.auth.onAuthStateChange(async(event,session)=>{
-  if(event==="SIGNED_OUT"){
-    currentRole=null;
-    currentUser=null;
-    setUserBar();
-    showView("loginView");
-  }
-});
-
-setDates();
-showView("loginView");
-loadSession();
+function sync(){const d=$('#d').value,p=$('#t').value==='Plumbing';$('#dy').value=dayOf(d);$('#du').textContent=dutyOf(d)||'Not Found';$('#pl').hidden=!p;$('#rm').hidden=p}
+function raise(){const d=$('#d').value,t=$('#t').value;if(!d)return flash('Pick a date.','er');let room;
+ if(t==='Plumbing'){const n=$('#num').value.trim();if(!n)return flash('Enter the tap / bathroom / washroom number.','er');room=`${$('#side').value} ${$('#pr').value} ${n}`}
+ else{room=$('#room').value.trim();if(!room)return flash('Enter the room.','er')}
+ const id=nextId(),m=dutyOf(d)||'Not Found';db.complaints.push({name:ses.name,type:t,id,cost:0,day:dayOf(d),member:m,room});save();
+ flash(`Complaint saved. Repair ID ${id} · assigned to ${m}.`,'ok','upd')}
+function chk(){const k=findItem($('#item').value),el=$('#av');
+ if(!$('#item').value.trim())el.textContent='';else if(k){el.className='mu';el.textContent=`Available in stock · Quantity in stock: ${db.stock[k]}`}else{el.className='';el.style.color='var(--er)';el.textContent='Item is not available in stock. Please contact any Maintenance member.'}}
+function reqItem(){const k=findItem($('#item').value);if(!k)return flash('Item is not available in stock. Please contact any Maintenance member.','er');
+ const d=$('#d').value;db.srd.push({name:ses.name,date:d,day:dayOf(d),item:k});save();flash('Item request saved successfully!','ok','prev')}
+function addRow(){$('#items').insertAdjacentHTML('beforeend','<div class=ir style="margin-top:8px"><input list=il placeholder="Item"><input type=number min=0 placeholder="Qty"></div>')}
+function complete(){const id=+$('#rid').value,c=db.complaints.find(x=>x.id===id);if(!c)return flash('Repair ID not found!','er');const w=[];
+ document.querySelectorAll('.ir').forEach(r=>{const n=r.children[0].value.trim(),q=+r.children[1].value;if(!n||!(q>0))return;const k=findItem(n);
+  if(!k){w.push(`${n} is not in the stock list`);return}if(db.stock[k]<q)w.push(`${k}: only ${db.stock[k]} in stock`);db.stock[k]=Math.max(0,db.stock[k]-q)});
+ db.records.push({...c});db.complaints=db.complaints.filter(x=>x!==c);save();
+ flash(`Repair ${id} completed successfully.`+(w.length?` Stock warnings: ${w.join('; ')}.`:''),w.length?'wa':'ok','comp')}
+function addStock(){const n=$('#sn2').value.trim(),q=parseInt($('#sq').value);if(!n||isNaN(q)||q<0)return flash('Enter an item and a quantity.','er');
+ const k=findItem(n)||n;db.stock[k]=(db.stock[k]||0)+q;save();flash(`Stock added: ${k} is now ${db.stock[k]}.`,'ok')}
+function fs(v){v=v.toLowerCase();document.querySelectorAll('#st tr').forEach((r,i)=>{if(i)r.hidden=!r.cells[0].textContent.toLowerCase().includes(v)})}
+; (async()=>{const {data:{session}}=await sb.auth.getSession();if(session){const {data:p}=await sb.from("profiles").select("*").eq("id",session.user.id).single();if(p?.role==="admin"){ses={role:"member",name:p.full_name,userId:p.id,tab:"dash"};try{await loadAdminData()}catch(e){console.error(e)}}else if(p?.role==="srd"){ses={role:"srd",name:p.full_name,userId:p.id,tab:"req"};try{await loadSrdData()}catch(e){console.error(e)}}}render()})();
