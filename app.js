@@ -51,7 +51,7 @@ done:()=>`<section class=card><h2>Complete a repair</h2><label>Repair ID<input i
  <p><button class=g onclick="addRow()">+ Add another item</button></p><button class=p onclick="complete()">Mark complete</button></section>`,
 stock:()=>`<section class=card><h2>Update stock</h2><div class=row><label>Item<input id=sn2 list=il></label><label>Quantity to add<input id=sq type=number min=0></label></div>
  <datalist id=il>${Object.keys(db.stock).map(k=>`<option value="${esc(k)}">`).join('')}</datalist><button class=p onclick="addStock()">Add stock</button></section>
- <section class=card><h2>Current stock</h2><label>Search<input oninput="fs(this.value)"></label><div class=tw><table id=st><tr><th>Item</th><th>Quantity</th></tr>${Object.entries(db.stock).map(([k,q])=>`<tr><td>${esc(k)}</td><td>${q}</td></tr>`).join('')}</table></div></section>`
+ <section class=card><h2>Current stock</h2><label>Search<input oninput="fs(this.value)"></label><div class=tw><table id=st><tr><th>Item</th><th>Quantity</th></tr>${Object.entries(db.stock).map(([k,q])=>`<tr><td>${esc(k)}</td><td>${q}</td></tr>`).join('')}</table></div></section>`,
 members:()=>`<section class=card><h2>Add department member</h2>
  <div class=row><label>Member ID<input id=mid inputmode=numeric placeholder="Example: 109"></label><label>Name<input id=mn placeholder="Member name"></label></div>
  <div class=row><label>Email ID<input id=me type=email placeholder="member@example.com"></label><label>Initial Password<input id=mp type=password minlength=6 placeholder="Minimum 6 characters"></label></div>
