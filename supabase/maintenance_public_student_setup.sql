@@ -170,6 +170,18 @@ begin
     raise exception 'Student name does not match the registered ID';
   end if;
 
+  -- Prevent repeated submissions of the same unresolved issue.
+  if exists (
+    select 1
+    from public.complaints c
+    where lower(trim(c.registration_no))=lower(trim(v_registration_no))
+      and lower(trim(c.complaint_type))=lower(trim(p_complaint_type))
+      and lower(trim(c.location))=lower(trim(p_location))
+      and c.status='PENDING'
+  ) then
+    raise exception 'A pending complaint for the same issue and location already exists. Use the reminder option instead.';
+  end if;
+
   select p.id
   into v_student_id
   from public.profiles p
@@ -219,6 +231,53 @@ $$;
 
 grant execute on function public.submit_public_complaint(text,text,date,text,text,text,text) to anon,authenticated;
 grant execute on function public.track_public_complaints(text) to anon,authenticated;
+
+-- Track the last reminder sent for a pending complaint.
+alter table public.complaints
+add column if not exists reminder_sent_at timestamptz;
+
+create or replace function public.claim_complaint_reminder(
+  p_registration_no text,
+  p_complaint_no bigint
+)
+returns table(
+  complaint_no bigint,
+  student_name text,
+  registration_no text,
+  class_name text,
+  complaint_type text,
+  location text,
+  complaint_date date,
+  assigned_to text
+)
+language plpgsql
+security definer
+set search_path=''
+as $
+begin
+  return query
+  update public.complaints c
+  set reminder_sent_at=now()
+  where c.complaint_no=p_complaint_no
+    and lower(trim(c.registration_no))=lower(trim(p_registration_no))
+    and c.status='PENDING'
+    and (
+      c.reminder_sent_at is null
+      or c.reminder_sent_at <= now() - interval '6 hours'
+    )
+  returning
+    c.complaint_no,
+    c.student_name,
+    c.registration_no,
+    c.class_name,
+    c.complaint_type,
+    c.location,
+    c.complaint_date,
+    c.assigned_to;
+end;
+$;
+
+grant execute on function public.claim_complaint_reminder(text,bigint) to anon,authenticated;
 
 -- Complete a repair atomically: validate stock, deduct stock, record usage,
 -- and mark the complaint fixed in one database transaction.
