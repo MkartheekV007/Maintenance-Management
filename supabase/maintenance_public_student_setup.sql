@@ -134,7 +134,11 @@ returns table(complaint_no bigint)
 language plpgsql
 security definer
 set search_path=''
-as $$
+as $
+declare
+  v_registration_no text;
+  v_student_name text;
+  v_class_name text;
 begin
   if nullif(trim(p_registration_no),'') is null
      or nullif(trim(p_student_name),'') is null then
@@ -145,11 +149,27 @@ begin
     raise exception 'Invalid complaint type';
   end if;
 
+  select
+    sd.registration_no,
+    sd.full_name,
+    sd.class_name
+  into
+    v_registration_no,
+    v_student_name,
+    v_class_name
+  from public.student_directory sd
+  where lower(trim(sd.registration_no))=lower(trim(p_registration_no))
+  limit 1;
+
+  v_registration_no=coalesce(v_registration_no,trim(p_registration_no));
+  v_student_name=coalesce(v_student_name,trim(p_student_name));
+
   return query
   insert into public.complaints(
     student_id,
     registration_no,
     student_name,
+    class_name,
     complaint_date,
     complaint_type,
     location,
@@ -159,8 +179,9 @@ begin
   )
   values(
     null,
-    trim(p_registration_no),
-    trim(p_student_name),
+    v_registration_no,
+    v_student_name,
+    v_class_name,
     coalesce(p_complaint_date,current_date),
     p_complaint_type,
     trim(p_location),
@@ -170,7 +191,7 @@ begin
   )
   returning public.complaints.complaint_no;
 end;
-$$;
+$;
 
 create or replace function public.track_public_complaints(p_registration_no text)
 returns setof public.complaints
