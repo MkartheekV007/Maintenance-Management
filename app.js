@@ -27,14 +27,30 @@ async function loadMembers(){const r=await sb.functions.invoke("bright-endpoint"
 async function memberLogin(id,password){
  const memberId=String(id||"").trim(),pw=String(password||"");
  if(!memberId||!pw)throw new Error("Invalid Login!");
- const r=await sb.functions.invoke("manage-members",{body:{action:"login",member_id:memberId,password:pw}});
- if(r.data?.error)throw new Error(r.data.error);
- if(r.error)throw new Error(r.error.message||"Login service unavailable. Please try again.");
- const s=r.data?.session;
- if(!s?.access_token||!s?.refresh_token)throw new Error("Invalid Login!");
- const adopted=await sb.auth.setSession(s);
- if(adopted.error)throw new Error("Could not establish login session.");
- return r.data.profile
+ const endpoint="https://flmzdktzswjjofpsclbc.supabase.co/functions/v1/bright-endpoint";
+ try{
+   const response=await fetch(endpoint,{
+     method:"POST",
+     headers:{
+       "Content-Type":"application/json",
+       "apikey":SUPABASE_KEY,
+       "Authorization":"Bearer "+SUPABASE_KEY
+     },
+     body:JSON.stringify({action:"login",member_id:memberId,password:pw})
+   });
+   const textBody=await response.text();
+   let data={};
+   try{data=JSON.parse(textBody||"{}")}catch{}
+   if(!response.ok)throw new Error(data.error||("Edge Function HTTP "+response.status));
+   if(data.error)throw new Error(data.error);
+   const s=data.session;
+   if(!s?.access_token||!s?.refresh_token)throw new Error("Invalid Login!");
+   const adopted=await sb.auth.setSession(s);
+   if(adopted.error)throw new Error("Could not establish login session.");
+   return data.profile;
+ }catch(e){
+   throw new Error(e?.message||"Could not reach Member login service.");
+ }
 }
 async function addMember(){const id=$("#mid").value.trim(),name=$("#mn").value.trim(),email=$("#me").value.trim(),pw=$("#mp").value,role=$("#mr").value;if(!id||!name||!email||!pw)return flash("Enter Member ID, name, email and initial password.","er");const r=await sb.functions.invoke("manage-members",{body:{action:"create",member_id:id,name,email,password:pw,role}});if(r.error)return flash("Member could not be added: "+r.error.message,"er");if(r.data?.error)return flash("Member could not be added: "+r.data.error,"er");await loadMembers();flash("Member "+name+" added successfully.","ok","members");render()}
 async function changePassword(){const p1=$("#cp1").value,p2=$("#cp2").value;if(!p1||p1.length<6)return flash("Password must be at least 6 characters.","er");if(p1!==p2)return flash("Passwords do not match.","er");const {error}=await sb.auth.updateUser({password:p1});if(error)return flash("Password could not be changed: "+error.message,"er");flash("Password changed successfully.","ok","members");render()}
