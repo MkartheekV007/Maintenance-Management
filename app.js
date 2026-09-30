@@ -23,7 +23,7 @@ const E=(...a)=>a.map(esc);
 async function loadAdminData(){const c=await sb.from("complaints").select("*").order("complaint_no",{ascending:false});const st=await sb.from("stock").select("*").order("item_name");const sr=await sb.from("srd_requests").select("*").order("request_no",{ascending:false});if(c.error)throw c.error;if(st.error)throw st.error;if(sr.error)throw sr.error;db.complaints=(c.data||[]).filter(x=>x.status!=="FIXED");db.records=(c.data||[]).filter(x=>x.status==="FIXED");db.stock={};(st.data||[]).forEach(x=>db.stock[x.item_name]=x.quantity);db.srd=sr.data||[]} 
 async function loadSrdData(){const st=await sb.from("stock").select("*").order("item_name");const sr=await sb.from("srd_requests").select("*").eq("requested_by",ses.userId).order("request_no",{ascending:false});if(st.error)throw st.error;if(sr.error)throw sr.error;db.stock={};(st.data||[]).forEach(x=>db.stock[x.item_name]=x.quantity);db.srd=sr.data||[]}
 async function loadStudentHistory(){const r=await sb.rpc("track_public_complaints",{p_registration_no:ses.roll});if(r.error)throw r.error;db.complaints=(r.data||[]).filter(x=>x.status!=="FIXED");db.records=(r.data||[]).filter(x=>x.status==="FIXED")}
-async function loadMembers(){const r=await sb.functions.invoke("manage-members",{body:{action:"list"}});if(r.error)throw r.error;if(r.data?.error)throw new Error(r.data.error);db.members=r.data?.members||[]}
+async function loadMembers(){const r=await sb.functions.invoke("bright-endpoint",{body:{action:"list"}});if(r.error)throw r.error;if(r.data?.error)throw new Error(r.data.error);db.members=r.data?.members||[]}
 async function memberLogin(id,password){
  const memberId=String(id||"").trim(),pw=String(password||"");
  if(!memberId||!pw)throw new Error("Invalid Login!");
