@@ -2,8 +2,61 @@
 const SEED={"stock":{"keyboard":0,"Projector remote":0,"headphone":0,"XLR small wire":0,"Monitor":0,"Pro fx cable":0,"Quest big speaker 1":0,"Quest Amp":0,"Line-in jack":0,"ProFX30V3 type d cable":0,"Mike WIRE(xlr)(white black )":0,"Quest big speaker 2":0,"CPU power chord":0,"ProFX30V3 Mixer":0,"HDMI Cable":0,"headphone jack wire":0,"MONITOR power chord":0,"Ahuja AMP":0,"speaker stand 1":0,"VGA CABLE Monitor":0,"Chair 2":0,"mouse":0,"Jack to Jack":0,"MIKE Stand":0,"CPU":0,"SETUP BOX POWER CABLE":0,"senior biometric":0,"PROJECTOR":0,"Mike 1":0,"TV HDMI":0,"Vga 2 HDMI":0,"Mic":0,"Extention To AVC":0,"Line in to XLR":0,"mic stand":0,"Podium":0,"Ahuja Podium mike holder":0,"speaker stand 2":0,"SETUP BOX":0,"MiKE5":0,"TV Screen":0,"Light remote":0,"quest small speaker":0,"Mike WIRE(xlr)(white red)":0,"Mike 2":0,"senior biometric power cable":0,"6 Socket Extention Box":0,"skrew driver kit 1":0,"Podium mike":0,"2 Way Extention Box":0,"HDMI Splitter (Black)":0,"speaker wire 2":0,"Mike 4":0,"speaker wire 1":0,"8 socket extension box":0,"Mike 3":0,"PROJECTOR (Old)":0,"Mic WIRE(Xlr)(White Pink)":0,"Light Wire":0,"EP to PHONE (Blue)":0,"TV POWER CABLE":0,"Podium Mike Wire":0,"Projector Power Cable":0,"Hdmi 2 Hdmi Cable":0,"Mic Stand Base":0,"Soldering Machine 2":0,"Soldering Machine 1":0,"AVC Table":0,"Jack to Xlr wire":0,"Podium mic Stand":0,"Old Headphones":0,"Line-in Extendel":0,"Old hostel podium mic":0,"Line in Jack":0,"1 Socket Extention":0,"Jack Wire":0,"Maintenance cupboard":0,"XLR white":0,"Projector Screen 1":0,"Projector Screen 2":0,"EP to PHONO (BLACK)":0,"Measuring Tape":0,"Scissors":0,"pipes":0,"ahuja":0},"duties":[["Chhayank","Narendra Babu","Dinakar","Tuesday","09/22/26"],["Lutharshan","Revanth","Anirudh","Wednesday","09/23/26"],["Charan","Harsha","Lohit","Thursday","09/24/26"],["Sashank","Chaitanya","Jai Kiran","Friday","09/25/26"],["murali","Rushi","Dinakar","Saturday","09/26/26"],["Aditya","Narendra","Anirudh","Sunday","09/27/26"],["Sathwik","Narendra Babu","Lohit","Monday","09/28/26"],["Preetam","Revanth","Jai Kiran","Tuesday","09/29/26"],["Chhayank","Harsha","Dinakar","Wednesday","09/30/26"],["Lutharshan","Chaitanya","Anirudh","Thursday","10/01/26"],["Charan","Rushi","Lohit","Friday","10/02/26"],["Sashank","Narendra","Jai Kiran","Saturday","10/03/26"],["murali","Narendra Babu","Dinakar","Sunday","10/04/26"],["Aditya","Revanth","Anirudh","Monday","10/05/26"],["Sathwik","Harsha","Lohit","Tuesday","10/06/26"],["Preetam","Chaitanya","Jai Kiran","Wednesday","10/07/26"],["Chhayank","Rushi","Dinakar","Thursday","10/08/26"],["Lutharshan","Narendra","Anirudh","Friday","10/09/26"],["Charan","Narendra Babu","Lohit","Saturday","10/10/26"],["Sashank","Revanth","Jai Kiran","Sunday","10/11/26"],["murali","Harsha","Dinakar","Monday","10/12/26"],["Aditya","Chaitanya","Anirudh","Tuesday","10/13/26"],["Sathwik","Rushi","Lohit","Wednesday","10/14/26"],["Preetam","Narendra","Jai Kiran","Thursday","10/15/26"],["Chhayank","Narendra Babu","Dinakar","Friday","10/16/26"],["Lutharshan","Revanth","Anirudh","Saturday","10/17/26"],["Charan","Harsha","Lohit","Sunday","10/18/26"],["Sashank","Chaitanya","Jai Kiran","Monday","10/19/26"],["Murali","Rushi","Dinakar","Tuesday","10/20/26"],["Aditya","Narendra","Anirudh","Wednesday","10/21/26"],["Sathwik","Narendra Babu","Lohit","Thursday","10/22/26"],["Preetam","Revanth","Jai Kiran","Friday","10/23/26"],["","Harsha","","Saturday","10/24/26"],["","Chaitanya","","Sunday","10/25/26"],["","Rushi","","Monday","10/26/26"],["","Narendra","","Tuesday","10/27/26"],["","Narendra Babu","","Wednesday","10/28/26"],["","Revanth","","Thursday","10/29/26"],["","Harsha","","Friday","10/30/26"],["","","","Saturday","10/31/26"],["","","","Sunday","11/01/26"],["","","","Monday","11/02/26"]],"admins":[["Chhayank","101"],["Lutharshan","102"],["Charan","103"],["Sashank","104"],["murali","105"],["Aditya","106"],["Sathwik","107"],["Preetam","108"]],"records":[["muralidhar","Electric","100","0","monday","muralidhar","a9"],["muralidhar","Carpentry","100","0","monday","muralidhar","a5"],["muralidhar","Electric","100","0","monday","muralidhar","a9"],["muralidhar","Plumbing","100","0","wed","Not Found","A14 A05 Sides Washroom 2 - Tap"],["muralidhar","Plumbing","100","0","wed","Not Found","A14 Side Tap 2"]],"srd":[["muralidhar","mic","2","2"],["muralidhar","mic","2","2"],["muralidhar","mic","3","monday"],["muralidhar","mic","1","monday"],["muralidhar","tape","2","wed"]]};
 const SUPABASE_URL="https://flmzdktzswjjofpsclbc.supabase.co";
 const SUPABASE_KEY=String.fromCharCode(115,98,95,112,117,98,108,105,115,104,97,98,108,101,95,65,112,111,78,113,49,98,105,72,108,105,86,105,117,57,71,57,116,49,76,122,81,95,56,75,111,111,82,120,116,54);
-const supabaseLib=window.supabase;if(!supabaseLib||typeof supabaseLib.createClient!=="function"){document.getElementById("app").innerHTML="<main><section class=card><h2>System loading error</h2><p class=mu>Supabase library could not be loaded. Please refresh this page.</p></section></main>";throw new Error("Supabase library failed to load")}const {createClient}=supabaseLib;
-const sb=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const REST_BASE=SUPABASE_URL+"/rest/v1";
+const AUTH_BASE=SUPABASE_URL+"/auth/v1";
+const EDGE_BASE=SUPABASE_URL+"/functions/v1";
+const SESSION_KEY="maintenance_supabase_session";
+const jsonHeaders={"apikey":SUPABASE_KEY,"Content-Type":"application/json"};
+const getStored=()=>{try{return JSON.parse(localStorage.getItem(SESSION_KEY)||"null")}catch{return null}};
+const saveStored=s=>s?localStorage.setItem(SESSION_KEY,JSON.stringify(s)):localStorage.removeItem(SESSION_KEY);
+async function api(path,opts={}){
+ const h={...jsonHeaders,...(opts.headers||{})};
+ const r=await fetch(path,{...opts,headers:h});
+ const txt=await r.text();let data=null;try{data=txt?JSON.parse(txt):null}catch{data=txt}
+ if(!r.ok)return{data,error:new Error(data?.message||data?.error_description||data?.msg||data?.error||("HTTP "+r.status))};
+ return{data,error:null};
+}
+function queryBuilder(table){
+ const state={filters:[],order:null,one:false,body:null,method:"GET",headers:{}};
+ const q={
+  select(cols="*"){state.select=cols;return q},
+  eq(col,val){state.filters.push([col,"eq",val]);return q},
+  order(col,opt={}){state.order={col,ascending:opt.ascending!==false};return q},
+  single(){state.one=true;return q},
+  insert(body){state.method="POST";state.body=body;state.headers["Prefer"]="return=representation";return q},
+  upsert(body,opt={}){state.method="POST";state.body=body;state.headers["Prefer"]="resolution=merge-duplicates,return=representation";if(opt.onConflict)state.onConflict=opt.onConflict;return q},
+  then(resolve,reject){return q.run().then(resolve,reject)},
+  async run(){
+   let url=REST_BASE+"/"+table+"?select="+encodeURIComponent(state.select||"*");
+   for(const [col,op,val] of state.filters)url+="&"+encodeURIComponent(col)+"="+op+"."+encodeURIComponent(String(val));
+   if(state.order)url+="&order="+encodeURIComponent(state.order.col)+"."+(state.order.ascending?"asc":"desc");
+   if(state.one)state.headers["Accept-Profile"]="public";
+   if(state.onConflict)url+="&on_conflict="+encodeURIComponent(state.onConflict);
+   const token=getStored()?.access_token;
+   if(token)state.headers.Authorization="Bearer "+token;
+   if(state.one)state.headers.Prefer="return=representation";
+   const r=await api(url,{method:state.method,headers:state.headers,body:state.body?JSON.stringify(state.body):undefined});
+   if(r.error)return r;
+   if(state.one){if(!Array.isArray(r.data)||!r.data.length)return{data:null,error:new Error("No rows found")};return{data:r.data[0],error:null}}
+   return r;
+  }
+ };
+ return q;
+}
+const sb={
+ from:table=>queryBuilder(table),
+ rpc:async(name,args={})=>{const token=getStored()?.access_token;return api(REST_BASE+"/rpc/"+name,{method:"POST",headers:token?{Authorization:"Bearer "+token}:{"Authorization":"Bearer "+SUPABASE_KEY},body:JSON.stringify(args)})},
+ functions:{invoke:async(name,{body}={})=>{const token=getStored()?.access_token;return api(EDGE_BASE+"/"+name,{method:"POST",headers:{"Authorization":"Bearer "+(token||SUPABASE_KEY)},body:JSON.stringify(body)})}},
+ auth:{
+  signInWithPassword:async({email,password})=>{const r=await api(AUTH_BASE+"/token?grant_type=password",{method:"POST",headers:{"Authorization":"Bearer "+SUPABASE_KEY},body:JSON.stringify({email,password})});if(!r.error)saveStored(r.data);return{data:r.data,error:r.error}},
+  setSession:async(s)=>{saveStored(s);return{data:{session:s},error:null}},
+  getSession:async()=>({data:{session:getStored()},error:null}),
+  signOut:async()=>{const s=getStored();if(s?.access_token)await api(AUTH_BASE+"/logout",{method:"POST",headers:{Authorization:"Bearer "+s.access_token}});saveStored(null);return{error:null}},
+  updateUser:async(attrs)=>{const s=getStored();if(!s?.access_token)return{error:new Error("Not logged in")};const r=await api(AUTH_BASE+"/user",{method:"PUT",headers:{Authorization:"Bearer "+s.access_token},body:JSON.stringify(attrs)});return{data:r.data,error:r.error}}
+ }
+};
+const hashParams=new URLSearchParams((window.location.hash||"").replace(/^#/,""));
+if(hashParams.get("access_token"))saveStored({access_token:hashParams.get("access_token"),refresh_token:hashParams.get("refresh_token")||""});
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const today=()=>new Date().toLocaleDateString("en-CA");
@@ -52,7 +105,7 @@ async function memberLogin(id,password){
    throw new Error(e?.message||"Could not reach Member login service.");
  }
 }
-async function addMember(){const id=$("#mid").value.trim(),name=$("#mn").value.trim(),email=$("#me").value.trim(),pw=$("#mp").value,role=$("#mr").value;if(!id||!name||!email||!pw)return flash("Enter Member ID, name, email and initial password.","er");const r=await sb.functions.invoke("manage-members",{body:{action:"create",member_id:id,name,email,password:pw,role}});if(r.error)return flash("Member could not be added: "+r.error.message,"er");if(r.data?.error)return flash("Member could not be added: "+r.data.error,"er");await loadMembers();flash("Member "+name+" added successfully.","ok","members");render()}
+async function addMember(){const id=$("#mid").value.trim(),name=$("#mn").value.trim(),email=$("#me").value.trim(),pw=$("#mp").value,role=$("#mr").value;if(!id||!name||!email||!pw)return flash("Enter Member ID, name, email and initial password.","er");const r=await sb.functions.invoke("bright-endpoint",{body:{action:"create",member_id:id,name,email,password:pw,role}});if(r.error)return flash("Member could not be added: "+r.error.message,"er");if(r.data?.error)return flash("Member could not be added: "+r.data.error,"er");await loadMembers();flash("Member "+name+" added successfully.","ok","members");render()}
 async function changePassword(){const p1=$("#cp1").value,p2=$("#cp2").value;if(!p1||p1.length<6)return flash("Password must be at least 6 characters.","er");if(p1!==p2)return flash("Passwords do not match.","er");const {error}=await sb.auth.updateUser({password:p1});if(error)return flash("Password could not be changed: "+error.message,"er");flash("Password changed successfully.","ok","members");render()}
 async function resetPassword(){const p1=$("#rp1").value,p2=$("#rp2").value;if(!p1||p1.length<6)return flash("Password must be at least 6 characters.","er");if(p1!==p2)return flash("Passwords do not match.","er");const {error}=await sb.auth.updateUser({password:p1});if(error)return flash("Password could not be changed: "+error.message,"er");await sb.auth.signOut();recoveryMode=false;window.history.replaceState({},document.title,window.location.pathname+window.location.search);ses={role:"",name:"",roll:"",userId:"",tab:""};nt={m:"Password updated successfully. You can now log in with your new password.","k":"ok"};render()}
 
