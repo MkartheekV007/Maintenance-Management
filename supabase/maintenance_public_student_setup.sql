@@ -554,3 +554,62 @@ drop policy if exists "SRD users view own srd profile" on public.srd_members;
 create policy "SRD users view own srd profile"
 on public.srd_members for select to authenticated
 using (id=auth.uid());
+
+
+-- Stock-aware repair catalog and unavailable-item workflow.
+create table if not exists public.repair_catalog (id uuid primary key default gen_random_uuid(),repair_type text not null check (repair_type in ('Plumbing','Electric','Carpentry')),repair_name text not null,component_name text not null,stock_item_name text not null,active boolean not null default true,created_at timestamptz not null default now(),unique(repair_type,repair_name,component_name));
+alter table public.complaints add column if not exists repair_name text;
+alter table public.complaints add column if not exists component_name text;
+alter table public.complaints add column if not exists required_stock_item text;
+alter table public.complaints add column if not exists awaiting_stock boolean not null default false;
+alter table public.complaints add column if not exists stock_message text;
+alter table public.repair_catalog enable row level security;
+drop policy if exists "Anyone can view active repair catalog" on public.repair_catalog;
+create policy "Anyone can view active repair catalog" on public.repair_catalog for select to anon,authenticated using (active=true);
+drop policy if exists "Admins manage repair catalog" on public.repair_catalog;
+create policy "Admins manage repair catalog" on public.repair_catalog for all to authenticated using ((select role from public.profiles where id=auth.uid())='admin') with check ((select role from public.profiles where id=auth.uid())='admin');
+
+create or replace function public.submit_public_complaint(p_registration_no text,p_student_name text,p_complaint_date date,p_complaint_type text,p_location text,p_details text,p_assigned_to text,p_repair_name text default null,p_component_name text default null)
+returns table(complaint_no bigint,awaiting_stock boolean,required_stock_item text)
+language plpgsql security definer set search_path=''
+as $$
+declare v_registration_no text;v_student_name text;v_class_name text;v_student_id uuid;v_stock_item text;v_stock_qty integer;v_awaiting boolean:=false;
+begin
+if nullif(trim(p_registration_no),'') is null or nullif(trim(p_student_name),'') is null then raise exception 'Student details are required';end if;
+if p_complaint_type not in ('Plumbing','Electric','Carpentry') then raise exception 'Invalid complaint type';end if;
+select sd.registration_no,sd.full_name,sd.class_name into v_registration_no,v_student_name,v_class_name from public.student_directory sd where lower(trim(sd.registration_no))=lower(trim(p_registration_no)) limit 1;
+if v_registration_no is null then raise exception 'Invalid Student ID';end if;
+if lower(trim(v_student_name))<>lower(trim(p_student_name)) then raise exception 'Student name does not match the registered ID';end if;
+if nullif(trim(p_repair_name),'') is not null and nullif(trim(p_component_name),'') is not null then
+ select rc.stock_item_name into v_stock_item from public.repair_catalog rc where rc.active and lower(trim(rc.repair_type))=lower(trim(p_complaint_type)) and lower(trim(rc.repair_name))=lower(trim(p_repair_name)) and lower(trim(rc.component_name))=lower(trim(p_component_name)) limit 1;
+ if v_stock_item is not null then select s.quantity into v_stock_qty from public.stock s where lower(trim(s.item_name))=lower(trim(v_stock_item)) limit 1;v_awaiting:=coalesce(v_stock_qty,0)<=0;end if;
+end if;
+if exists(select 1 from public.complaints c where lower(trim(c.registration_no))=lower(trim(v_registration_no)) and lower(trim(c.complaint_type))=lower(trim(p_complaint_type)) and lower(trim(c.location))=lower(trim(p_location)) and c.status='PENDING') then raise exception 'A pending complaint for the same issue and location already exists. Use the reminder option instead.';end if;
+select p.id into v_student_id from public.profiles p where lower(trim(p.registration_no))=lower(trim(v_registration_no)) limit 1;
+return query insert into public.complaints(student_id,registration_no,student_name,class_name,complaint_date,complaint_type,location,details,assigned_to,status,repair_name,component_name,required_stock_item,awaiting_stock,stock_message)
+values(v_student_id,v_registration_no,v_student_name,v_class_name,coalesce(p_complaint_date,current_date),p_complaint_type,trim(p_location),trim(p_details),nullif(trim(p_assigned_to),''),'PENDING',nullif(trim(p_repair_name),''),nullif(trim(p_component_name),''),v_stock_item,v_awaiting,case when v_awaiting then 'The item is not available currently. The work will be done when the item is available.' else null end)
+returning public.complaints.complaint_no,public.complaints.awaiting_stock,public.complaints.required_stock_item;
+end;
+$$;
+grant execute on function public.submit_public_complaint(text,text,date,text,text,text,text,text,text) to anon,authenticated;
+
+create or replace function public.get_unavailable_complaints()
+returns table(student_id text,student_name text,class_name text,complaint_type text,complaint_id bigint,complaint_date date,repair_name text,component_name text,required_stock_item text,location text,stock_quantity integer,status text)
+language plpgsql security definer set search_path=public
+as $$ declare v_role text;begin select role into v_role from public.profiles where id=auth.uid();if v_role not in ('admin','department_member') then raise exception 'Only maintenance members can view unavailable complaints';end if;return query select coalesce(c.registration_no,''),coalesce(c.student_name,''),coalesce(c.class_name,''),c.complaint_type,c.complaint_no,c.complaint_date,c.repair_name,c.component_name,c.required_stock_item,c.location,coalesce(s.quantity,0),c.status from public.complaints c left join public.stock s on lower(trim(s.item_name))=lower(trim(c.required_stock_item)) where c.status<>'FIXED' and c.awaiting_stock=true and coalesce(s.quantity,0)<=0 order by c.complaint_no desc;end;$$;
+grant execute on function public.get_unavailable_complaints() to authenticated;
+
+create or replace function public.complete_repair(p_complaint_no bigint,p_items jsonb)
+returns jsonb language plpgsql security definer set search_path=public
+as $$ declare v_role text;v_item jsonb;v_stock integer;v_stock_id uuid;v_name text;v_qty integer;v_user_name text;begin
+select role,full_name into v_role,v_user_name from public.profiles where id=auth.uid();if v_role not in ('admin','department_member') then raise exception 'Only maintenance members can complete repairs';end if;if not exists(select 1 from public.complaints where complaint_no=p_complaint_no and status<>'FIXED') then raise exception 'Repair ID not found or already completed';end if;
+for v_item in select * from jsonb_array_elements(coalesce(p_items,'[]'::jsonb)) loop v_name=trim(v_item->>'item_name');v_qty=(v_item->>'quantity')::integer;if v_name is null or v_name='' or v_qty is null or v_qty<=0 then raise exception 'Invalid repair item';end if;select id,quantity into v_stock_id,v_stock from public.stock where lower(item_name)=lower(v_name) for update;if v_stock_id is null then raise exception 'Stock item not found: %',v_name;end if;if v_stock<v_qty then raise exception 'Insufficient stock for %: only % available',v_name,v_stock;end if;end loop;
+for v_item in select * from jsonb_array_elements(coalesce(p_items,'[]'::jsonb)) loop v_name=trim(v_item->>'item_name');v_qty=(v_item->>'quantity')::integer;select id into v_stock_id from public.stock where lower(item_name)=lower(v_name);update public.stock set quantity=quantity-v_qty,updated_at=now() where id=v_stock_id;insert into public.inventory_transactions(stock_id,item_name,transaction_type,quantity,related_complaint_id,performed_by,performed_by_name,purpose,notes) select v_stock_id,item_name,'USED_IN_REPAIR',v_qty,p_complaint_no,auth.uid(),v_user_name,'Repair completion','Item used for repair ID '||p_complaint_no from public.stock where id=v_stock_id;end loop;
+update public.complaints set status='FIXED',completed_at=now(),completed_by=auth.uid(),repair_items=coalesce(p_items,'[]'::jsonb),awaiting_stock=false,stock_message=null where complaint_no=p_complaint_no;
+return jsonb_build_object('success',true,'complaint_no',p_complaint_no);end;$$;
+grant execute on function public.complete_repair(bigint,jsonb) to authenticated;
+
+create or replace function public.record_stock_addition(p_item_name text,p_quantity integer,p_purpose text default null,p_notes text default null)
+returns void language plpgsql security definer set search_path=public
+as $$ declare v_role text;v_stock_id uuid;v_name text;v_user_name text;begin select role,full_name into v_role,v_user_name from public.profiles where id=auth.uid();if v_role not in ('admin','department_member') then raise exception 'Only maintenance members can add stock';end if;if nullif(trim(p_item_name),'') is null or p_quantity is null or p_quantity<=0 then raise exception 'Invalid stock entry';end if;v_name=trim(p_item_name);insert into public.stock(item_name,quantity,updated_at) values(v_name,p_quantity,now()) on conflict(item_name) do update set quantity=public.stock.quantity+excluded.quantity,updated_at=now() returning id into v_stock_id;insert into public.inventory_transactions(stock_id,item_name,transaction_type,quantity,performed_by,performed_by_name,purpose,notes) values(v_stock_id,v_name,'STOCK_ADDED',p_quantity,auth.uid(),v_user_name,p_purpose,p_notes);end;$$;
+grant execute on function public.record_stock_addition(text,integer,text,text) to authenticated;
