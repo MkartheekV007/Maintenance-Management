@@ -53,6 +53,7 @@ const publicClient = createClient(url, getPublishableKey(), {
 async function requireAdmin(req: Request) {
   const auth = req.headers.get("Authorization") || "";
   if (!auth.startsWith("Bearer ")) throw new Error("Authentication required");
+
   const token = auth.slice(7);
   const { data, error } = await admin.auth.getUser(token);
   if (error || !data.user) throw new Error("Authentication required");
@@ -63,7 +64,10 @@ async function requireAdmin(req: Request) {
     .eq("id", data.user.id)
     .single();
 
-  if (pe || !profile || profile.role !== "admin") throw new Error("Admin access required");
+  if (pe || !profile || profile.role !== "admin") {
+    throw new Error("Admin access required");
+  }
+
   return profile;
 }
 
@@ -77,29 +81,39 @@ Deno.serve(async (req) => {
     if (action === "login") {
       const memberId = String(body.member_id || "").trim();
       const password = String(body.password || "");
-      if (!memberId || !password) return json({ error: "Member ID and password are required" }, 400);
+
+      if (!memberId || !password) {
+        return json({ error: "Member ID and password are required" }, 400);
+      }
 
       const { data: profile, error: pe } = await admin
         .from("profiles")
         .select("id,registration_no,full_name,role")
         .eq("registration_no", memberId)
-        .eq("role", "admin")
+        .in("role", ["department_member", "admin"])
         .single();
 
-      if (pe || !profile) return json({ error: "Invalid Login!" }, 401);
+      if (pe || !profile) {
+        return json({ error: "Invalid Login!" }, 401);
+      }
 
-      const { data: userResult, error: ue } = await admin.auth.admin.getUserById(profile.id);
+      const { data: userResult, error: ue } =
+        await admin.auth.admin.getUserById(profile.id);
+
       if (ue) throw ue;
 
       const email = userResult.user?.email || null;
       if (!email) return json({ error: "Invalid Login!" }, 401);
 
-      const { data, error } = await publicClient.auth.signInWithPassword({
-        email,
-        password
-      });
+      const { data, error } =
+        await publicClient.auth.signInWithPassword({
+          email,
+          password
+        });
 
-      if (error || !data.session || !data.user) return json({ error: "Invalid Login!" }, 401);
+      if (error || !data.session || !data.user) {
+        return json({ error: "Invalid Login!" }, 401);
+      }
 
       return json({
         session: {
@@ -121,15 +135,20 @@ Deno.serve(async (req) => {
       const { data: profiles, error } = await admin
         .from("profiles")
         .select("id,registration_no,full_name,role,created_at")
-        .eq("role", "admin")
+        .in("role", ["department_member", "admin"])
         .order("registration_no");
 
       if (error) throw error;
 
-      const { data: users, error: ue } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+      const { data: users, error: ue } =
+        await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+
       if (ue) throw ue;
 
-      const emailById = new Map((users.users || []).map(u => [u.id, u.email || ""]));
+      const emailById = new Map(
+        (users.users || []).map(u => [u.id, u.email || ""])
+      );
+
       return json({
         members: (profiles || []).map(p => ({
           ...p,
@@ -143,12 +162,29 @@ Deno.serve(async (req) => {
       const name = String(body.name || "").trim();
       const email = String(body.email || "").trim().toLowerCase();
       const password = String(body.password || "");
+      const role = String(body.role || "department_member").trim();
 
       if (!memberId || !name || !email || !password) {
-        return json({ error: "Member ID, name, email and initial password are required" }, 400);
+        return json(
+          { error: "Member ID, name, email and initial password are required" },
+          400
+        );
       }
-      if (!/^\S+@\S+\.\S+$/.test(email)) return json({ error: "Enter a valid email address" }, 400);
-      if (password.length < 6) return json({ error: "Password must be at least 6 characters" }, 400);
+
+      if (!["department_member", "admin"].includes(role)) {
+        return json({ error: "Invalid account type" }, 400);
+      }
+
+      if (!/^\S+@\S+\.\S+$/.test(email)) {
+        return json({ error: "Enter a valid email address" }, 400);
+      }
+
+      if (password.length < 6) {
+        return json(
+          { error: "Password must be at least 6 characters" },
+          400
+        );
+      }
 
       const { data: existing } = await admin
         .from("profiles")
@@ -156,26 +192,31 @@ Deno.serve(async (req) => {
         .eq("registration_no", memberId)
         .maybeSingle();
 
-      if (existing) return json({ error: "That Member ID already exists" }, 409);
+      if (existing) {
+        return json({ error: "That Member ID already exists" }, 409);
+      }
 
-      const { data: created, error: ce } = await admin.auth.admin.createUser({
-        email,
-        password,
-        email_confirm: true,
-        user_metadata: {
-          registration_no: memberId,
-          full_name: name
-        }
-      });
+      const { data: created, error: ce } =
+        await admin.auth.admin.createUser({
+          email,
+          password,
+          email_confirm: true,
+          user_metadata: {
+            registration_no: memberId,
+            full_name: name
+          }
+        });
 
-      if (ce || !created.user) throw ce || new Error("Could not create account");
+      if (ce || !created.user) {
+        throw ce || new Error("Could not create account");
+      }
 
       const { error: pe } = await admin
         .from("profiles")
         .update({
           registration_no: memberId,
           full_name: name,
-          role: "admin"
+          role
         })
         .eq("id", created.user.id);
 
@@ -189,28 +230,70 @@ Deno.serve(async (req) => {
           id: created.user.id,
           registration_no: memberId,
           full_name: name,
-          email
+          email,
+          role
         }
       }, 201);
     }
 
     if (action === "deactivate") {
       const memberId = String(body.member_id || "").trim();
-      if (!memberId) return json({ error: "Member ID is required" }, 400);
-      if (memberId === String(actor.id)) return json({ error: "You cannot deactivate your own account here" }, 400);
+
+      if (!memberId) {
+        return json({ error: "Member ID is required" }, 400);
+      }
+
+      const { data: profile, error: pe } = await admin
+        .from("profiles")
+        .select("id,role")
+        .eq("registration_no", memberId)
+        .in("role", ["department_member", "admin"])
+        .single();
+
+      if (pe || !profile) {
+        return json({ error: "Member not found" }, 404);
+      }
+
+      if (profile.id === actor.id) {
+        return json(
+          { error: "You cannot deactivate your own account here" },
+          400
+        );
+      }
+
+      const { error: ue } =
+        await admin.auth.admin.updateUserById(profile.id, {
+          ban_duration: "876000h"
+        });
+
+      if (ue) throw ue;
+
+      return json({ ok: true });
+    }
+
+    if (action === "reactivate") {
+      const memberId = String(body.member_id || "").trim();
+
+      if (!memberId) {
+        return json({ error: "Member ID is required" }, 400);
+      }
 
       const { data: profile, error: pe } = await admin
         .from("profiles")
         .select("id")
         .eq("registration_no", memberId)
-        .eq("role", "admin")
+        .in("role", ["department_member", "admin"])
         .single();
 
-      if (pe || !profile) return json({ error: "Member not found" }, 404);
+      if (pe || !profile) {
+        return json({ error: "Member not found" }, 404);
+      }
 
-      const { error: ue } = await admin.auth.admin.updateUserById(profile.id, {
-        ban_duration: "876000h"
-      });
+      const { error: ue } =
+        await admin.auth.admin.updateUserById(profile.id, {
+          ban_duration: "none"
+        });
+
       if (ue) throw ue;
 
       return json({ ok: true });
@@ -218,6 +301,9 @@ Deno.serve(async (req) => {
 
     return json({ error: "Unknown action" }, 400);
   } catch (e) {
-    return json({ error: e instanceof Error ? e.message : "Server error" }, 500);
+    return json(
+      { error: e instanceof Error ? e.message : "Server error" },
+      500
+    );
   }
 });
