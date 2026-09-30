@@ -63,7 +63,7 @@ const today=()=>new Date().toLocaleDateString("en-CA");
 const dayOf=d=>d?new Date(d+"T00:00:00Z").toLocaleDateString("en-US",{weekday:"long",timeZone:"UTC"}):"";
 const dutyOf=d=>{if(!d)return"";const[y,m,x]=d.split("-"),r=SEED.duties.find(z=>z[4]===m+"/"+x+"/"+y.slice(2));return r?r.slice(0,3).map(s=>s.trim()).filter(Boolean).join(" & "):""};
 const findItem=n=>Object.keys(db.stock).find(k=>k.toLowerCase()===String(n).trim().toLowerCase());
-let db={stock:{...SEED.stock},duties:SEED.duties,admins:SEED.admins,srd:[],records:[],complaints:[],pending:[],members:[],students:[],catalog:[],unavailable:[]};
+let db={stock:{...SEED.stock},duties:SEED.duties,admins:SEED.admins,srd:[],records:[],complaints:[],pending:[],members:[],students:[],catalog:[],unavailable:[],zeroStock:[]};
 let ses={role:"",name:"",roll:"",userId:"",tab:""},nt=null;
 let recoveryMode=new URLSearchParams(window.location.hash.replace(/^#/,"")).get("type")==="recovery";
 const TABS={student:[["raise","Raise complaint"],["upd","My repair updates"]],srd:[["req","Request item"],["prev","Previous requests"]],department_member:[["dash","Summary"],["comp","Complaints"],["pend","Pending (raw)"],["unavail","Items not available"],["done","Complete repair"],["stock","Stock"]],member:[["dash","Summary"],["comp","Complaints"],["pend","Pending (raw)"],["unavail","Items not available"],["done","Complete repair"],["stock","Stock"],["catalog","Repair types"],["members","Members"]]};
@@ -86,7 +86,7 @@ async function loadAdminData(){
  db.pending=pc.data||[];
  db.complaints=(c.data||[]).filter(x=>x.status!=="FIXED");
  db.records=(c.data||[]).filter(x=>x.status==="FIXED");
- db.stock={};(st.data||[]).forEach(x=>db.stock[x.item_name]=x.quantity);db.srd=sr.data||[];
+ db.stock={};(st.data||[]).forEach(x=>db.stock[x.item_name]=x.quantity);db.zeroStock=Object.entries(db.stock).filter(([item,quantity])=>Number(quantity)<=0).map(([item,quantity])=>({item,quantity}));db.srd=sr.data||[];
 } async function loadSrdData(){const st=await sb.from("stock").select("*").order("item_name");const sr=await sb.from("srd_requests").select("*").eq("requested_by",ses.userId).order("request_no",{ascending:false});if(st.error)throw st.error;if(sr.error)throw sr.error;db.stock={};(st.data||[]).forEach(x=>db.stock[x.item_name]=x.quantity);db.srd=sr.data||[]}
 async function loadStudentHistory(){const r=await sb.rpc("track_public_complaints",{p_registration_no:ses.roll});const cat=await sb.from("repair_catalog").select("*").order("repair_type").order("repair_name").order("component_name");if(r.error)throw r.error;if(cat.error)throw cat.error;db.catalog=cat.data||[];db.complaints=(r.data||[]).filter(x=>x.status!=="FIXED");db.records=(r.data||[]).filter(x=>x.status==="FIXED")}
 async function loadMembers(){const r=await sb.functions.invoke("bright-endpoint",{body:{action:"list"}});if(r.error)throw r.error;if(r.data?.error)throw new Error(r.data.error);db.members=(r.data?.members||[]).map(m=>({...m,status:m.status==='Deactivated'?'Deactivated':'Active'}))}
@@ -153,7 +153,7 @@ dash:()=>{const s=Object.values(db.stock);return `<div class=stats><div class=st
  <section class=card><h2>Admin: ${esc(ses.name)}</h2><p class=mu>Use the tabs above to view complaints, complete repairs and update stock.</p></section>`},
 comp:()=>`<section class=card><h2>All complaints</h2>${tbl(['Student ID','Name','Class','Type','ID','Date','Assigned','Location','Status'],db.complaints.map(c=>E(c.registration_no,c.student_name,c.class_name,c.complaint_type,c.complaint_no,c.complaint_date,c.assigned_to,c.location,c.status)))}</section>`,
 pend:()=>`<section class=card><h2>Pending complaints</h2>${tbl(['Student ID','Name','Class','Type','ID','Date','Assigned','Location','Status'],db.pending.map(c=>E(c.student_id,c.student_name,c.class_name,c.complaint_type,c.complaint_id,c.complaint_date,c.assigned_to,c.location,c.status)))}</section>`,
-unavail:()=>`<section class=card><h2>Items not available</h2><p class=mu>The complaints below are waiting for stock. When stock is added, they can move into normal repair work.</p>${tbl(['Student ID','Name','Class','Type','ID','Date','Repair','Component','Required item','Location','Stock','Status'],db.unavailable.map(c=>E(c.student_id,c.student_name,c.class_name,c.complaint_type,c.complaint_id,c.complaint_date,c.repair_name,c.component_name,c.required_stock_item,c.location,c.stock_quantity,c.status)))}</section>`,
+unavail:()=>`<section class=card><h2>Items not available</h2><p class=mu>Stock items with quantity 0 are shown here automatically. Complaints waiting for those items are also listed below.</p><section class=card><h3>Out of stock items</h3>${tbl(['Item','Quantity'],db.zeroStock.map(x=>E(x.item,x.quantity)))}</section><section class=card><h3>Complaints waiting for stock</h3>${tbl(['Student ID','Name','Class','Type','ID','Date','Repair','Component','Required item','Location','Stock','Status'],db.unavailable.map(c=>E(c.student_id,c.student_name,c.class_name,c.complaint_type,c.complaint_id,c.complaint_date,c.repair_name,c.component_name,c.required_stock_item,c.location,c.stock_quantity,c.status)))}</section></section>`,
 done:()=>`<section class=card><h2>Complete a repair</h2><label>Repair ID<input id=rid inputmode=numeric></label>
  <p class=mu style="margin:0 0 6px">Items actually used (deducted from stock):</p><datalist id=il>${Object.keys(db.stock).map(k=>`<option value="${esc(k)}">`).join('')}</datalist>
  <div id=items><div class=ir><input list=il placeholder="Item"><input type=number min=0 placeholder="Qty"></div></div>
@@ -258,6 +258,7 @@ async function addStock(){const n=$('#sn2').value.trim(),q=parseInt($('#sq').val
  const {error}=await sb.from('stock').upsert({item_name:k,quantity:newQty,updated_at:new Date().toISOString()},{onConflict:'item_name'});
  if(error)return flash('Stock could not be saved: '+error.message,'er');
  db.stock[k]=newQty;
+ db.zeroStock=Object.entries(db.stock).filter(([item,quantity])=>Number(quantity)<=0).map(([item,quantity])=>({item,quantity}));
  flash(`Stock added: ${k} is now ${newQty}.`,'ok');
  render();
 }
