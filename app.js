@@ -201,11 +201,11 @@ const loginV=()=>`<section class=card><h2>Admin login</h2><div class=row><label>
  <p class=mu style="font-size:13px">Sign in with your Member ID and password.</p><button class=p onclick="login()">Login</button></section>`;
 async function login(){const id=$("#lid").value.trim(),pw=$("#lpw").value;if(!id||!pw)return flash("Invalid Login!","er");if(ses.role==="member"){try{const p=await memberLogin(id,pw);ses.role=p.role==="admin"?"member":"department_member";ses.name=p.full_name;ses.userId=p.id;ses.roll=p.registration_no||"";ses.tab="dash";nt={m:"Login successful. Welcome "+p.full_name+"!","k":"ok"};await loadAdminData();if(ses.role==="member")await loadMembers();}catch(e){return flash(e.message||"Invalid Login!","er")}}else{const {data,error}=await sb.auth.signInWithPassword({email:id,password:pw});if(error||!data.user)return flash("Invalid Login!","er");const {data:p,error:pe}=await sb.from("profiles").select("*").eq("id",data.user.id).single();if(pe||!p||p.role!=="srd"){await sb.auth.signOut();return flash("Invalid Login!","er")}ses.name=p.full_name;ses.userId=p.id;ses.tab="req";nt={m:"Login successful. Welcome "+p.full_name+"!","k":"ok"};try{await loadSrdData()}catch(e){nt={m:"Login succeeded, but data could not be loaded.","k":"er"}}}render()};
 
-function sync(){const d=$('#d').value,p=$('#t').value==='Plumbing';$('#dy').value=dayOf(d);$('#du').textContent=dutyOf(d)||'Not Found';$('#pl').hidden=!p;$('#rm').hidden=p}
+function sync(){const d=$('#d').value,p=$('#t').value==='Plumbing',needsComponent=p&&(['Bathroom','Washroom'].includes($('#pr')?.value));$('#dy').value=dayOf(d);$('#du').textContent=dutyOf(d)||'Not Found';$('#pl').hidden=!p;$('#cl').hidden=!needsComponent;$('#rm').hidden=p}
 async function raise(){
  const d=$('#d').value,t=$('#t').value;if(!d)return flash('Pick a date.','er');
  let room;
- if(t==='Plumbing'){const n=$('#num').value.trim();if(!n)return flash('Enter the tap / bathroom / washroom number.','er');room=`${$('#side').value} ${$('#pr').value} ${n}`}
+ if(t==='Plumbing'){const n=$('#num').value.trim(),problem=$('#pr').value,component=$('#comp').value;if(!n)return flash('Enter the tap / bathroom / washroom number.','er');if(['Bathroom','Washroom'].includes(problem)&&!component)return flash('Select the plumbing component.','er');room=`${$('#side').value} ${problem} ${n}${['Bathroom','Washroom'].includes(problem)?` - ${component}`:''}`}
  else{room=$('#room').value.trim();if(!room)return flash('Enter the room.','er')}
  const {data,error}=await sb.rpc('submit_public_complaint',{
    p_registration_no:ses.roll,p_student_name:ses.name,p_complaint_date:d,
