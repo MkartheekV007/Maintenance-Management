@@ -125,7 +125,8 @@ raise:()=>{const d=today();return `<section class=card><h2>Raise a complaint</h2
  <p class=duty>Duty member(s): <b id=du>${esc(dutyOf(d)||'Not Found')}</b></p>
  <label>Repair type<select id=t onchange="sync()"><option>Plumbing<option>Electric<option>Carpentry</select></label>
  <div id=pl class=row3><label>Side<select id=side><option>A14 Side<option>A05 Side<option>B12 Side<option>B1 Side</select></label>
- <label>Problem<select id=pr><option>Tap<option>Bathroom<option>Washroom</select></label><label>Number<input id=num></label></div>
+ <label>Problem<select id=pr onchange="sync()"><option>Tap</option><option>Bathroom</option><option>Washroom</option></select></label><label>Number<input id=num></label></div>
+ <label id=cl hidden>Component<select id=comp><option>Tap</option><option>Shower</option><option>Flush</option><option>Wash Basin</option><option>Drain</option><option>Pipe / Water Leakage</option><option>Other</option></select></label>
  <label id=rm hidden>Room<input id=room></label><button class=p onclick="raise()">Submit complaint</button></section>`},
 upd:()=>{
  const n=ses.roll.trim().toLowerCase();
