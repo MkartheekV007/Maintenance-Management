@@ -111,9 +111,11 @@ async function raise(){
    p_registration_no:ses.roll,p_student_name:ses.name,p_complaint_date:d,
    p_complaint_type:t,p_location:room,p_details:room,p_assigned_to:dutyOf(d)||'Not Found'
  });
- if(error||!data?.length)return flash(error?.message||'Could not save complaint.','er');
+ if(error)return flash('Could not save complaint: '+(error.message||'Unknown error'),'er');
+ if(data===null||data===undefined||data==='')return flash('Could not save complaint: No complaint ID returned.','er');
+ const complaintNo=typeof data==='object'&&data.complaint_no!==undefined?data.complaint_no:data;
  await loadStudentHistory();
- flash(`Complaint saved. Repair ID ${data[0].complaint_no} · assigned to ${dutyOf(d)||'Not Found'}.`,'ok','upd');
+ flash(`Complaint saved. Repair ID ${complaintNo} · assigned to ${dutyOf(d)||'Not Found'}.`,'ok','upd');
  render();
 }
 function chk(){const k=findItem($('#item').value),el=$('#av');
