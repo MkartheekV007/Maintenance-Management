@@ -28,8 +28,8 @@ async function memberLogin(id,password){
  const memberId=String(id||"").trim(),pw=String(password||"");
  if(!memberId||!pw)throw new Error("Invalid Login!");
  const r=await sb.functions.invoke("manage-members",{body:{action:"login",member_id:memberId,password:pw}});
- if(r.error)throw new Error("Login service unavailable. Please try again.");
  if(r.data?.error)throw new Error(r.data.error);
+ if(r.error)throw new Error(r.error.message||"Login service unavailable. Please try again.");
  const s=r.data?.session;
  if(!s?.access_token||!s?.refresh_token)throw new Error("Invalid Login!");
  const adopted=await sb.auth.setSession(s);
