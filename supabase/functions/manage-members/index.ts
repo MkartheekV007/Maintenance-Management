@@ -129,6 +129,136 @@ Deno.serve(async (req) => {
       });
     }
 
+    if (action === "remind") {
+      const registrationNo = String(body.registration_no || "").trim();
+      const complaintNo = Number(body.complaint_no);
+
+      if (!registrationNo || !Number.isInteger(complaintNo) || complaintNo <= 0) {
+        return json({ error: "Invalid complaint reminder request" }, 400);
+      }
+
+      const resendKey = Deno.env.get("RESEND_API_KEY");
+      const resendFrom = Deno.env.get("RESEND_FROM_EMAIL");
+
+      if (!resendKey || !resendFrom) {
+        return json({
+          error: "Email service is not configured. Add RESEND_API_KEY and RESEND_FROM_EMAIL to Supabase Edge Function secrets."
+        }, 503);
+      }
+
+      const { data: claimed, error: claimError } = await admin.rpc(
+        "claim_complaint_reminder",
+        {
+          p_registration_no: registrationNo,
+          p_complaint_no: complaintNo
+        }
+      );
+
+      if (claimError) throw claimError;
+
+      if (!claimed || !claimed.length) {
+        const { data: complaint, error: complaintError } = await admin
+          .from("complaints")
+          .select("complaint_no,status,reminder_sent_at")
+          .eq("complaint_no", complaintNo)
+          .eq("registration_no", registrationNo)
+          .maybeSingle();
+
+        if (complaintError) throw complaintError;
+        if (!complaint || complaint.status !== "PENDING") {
+          return json({ error: "This complaint is not pending or could not be found." }, 409);
+        }
+
+        return json({
+          error: "A reminder was already sent recently. Please wait before sending another reminder."
+        }, 429);
+      }
+
+      const complaint = claimed[0];
+
+      const { data: profiles, error: profileError } = await admin
+        .from("profiles")
+        .select("id,role")
+        .in("role", ["admin", "department_member"]);
+
+      if (profileError) throw profileError;
+
+      const { data: users, error: usersError } =
+        await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+
+      if (usersError) throw usersError;
+
+      const ids = new Set((profiles || []).map(p => p.id));
+      const recipients = (users.users || [])
+        .filter(u => ids.has(u.id) && u.email)
+        .map(u => u.email!)
+        .filter((email, i, arr) => arr.indexOf(email) === i);
+
+      if (!recipients.length) {
+        return json({ error: "No active Admin or Maintenance member email addresses are configured." }, 503);
+      }
+
+      const escHtml = (value: unknown) =>
+        String(value ?? "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#39;");
+
+      const subject = `Maintenance Reminder — Complaint #${complaint.complaint_no}`;
+      const html = `
+        <div style="font-family:Arial,sans-serif;line-height:1.6">
+          <h2>Maintenance Reminder</h2>
+          <p>A student has requested a reminder for a pending maintenance complaint.</p>
+          <table cellpadding="6" cellspacing="0" style="border-collapse:collapse">
+            <tr><td><b>Complaint ID</b></td><td>${escHtml(complaint.complaint_no)}</td></tr>
+            <tr><td><b>Student ID</b></td><td>${escHtml(complaint.registration_no)}</td></tr>
+            <tr><td><b>Student</b></td><td>${escHtml(complaint.student_name)}</td></tr>
+            <tr><td><b>Class</b></td><td>${escHtml(complaint.class_name)}</td></tr>
+            <tr><td><b>Type</b></td><td>${escHtml(complaint.complaint_type)}</td></tr>
+            <tr><td><b>Location</b></td><td>${escHtml(complaint.location)}</td></tr>
+            <tr><td><b>Date</b></td><td>${escHtml(complaint.complaint_date)}</td></tr>
+            <tr><td><b>Assigned</b></td><td>${escHtml(complaint.assigned_to)}</td></tr>
+          </table>
+          <p><b>Please complete the pending maintenance work.</b></p>
+        </div>
+      `;
+
+      const results = [];
+      for (const email of recipients) {
+        const response = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${resendKey}`
+          },
+          body: JSON.stringify({
+            from: resendFrom,
+            to: [email],
+            subject,
+            html
+          })
+        });
+
+        const responseBody = await response.text();
+        if (!response.ok) {
+          return json({
+            error: "The reminder was recorded, but the email service rejected the message.",
+            detail: responseBody
+          }, 502);
+        }
+
+        results.push(email);
+      }
+
+      return json({
+        ok: true,
+        recipients: results.length,
+        message: "Reminder sent to Maintenance members and Admins."
+      });
+    }
+
     const actor = await requireAdmin(req);
 
     if (action === "list") {
