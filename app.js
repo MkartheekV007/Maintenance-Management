@@ -76,7 +76,7 @@ const E=(...a)=>a.map(esc);
 async function loadAdminData(){const c=await sb.from("complaints").select("*").order("complaint_no",{ascending:false});const st=await sb.from("stock").select("*").order("item_name");const sr=await sb.from("srd_requests").select("*").order("request_no",{ascending:false});if(c.error)throw c.error;if(st.error)throw st.error;if(sr.error)throw sr.error;db.complaints=(c.data||[]).filter(x=>x.status!=="FIXED");db.records=(c.data||[]).filter(x=>x.status==="FIXED");db.stock={};(st.data||[]).forEach(x=>db.stock[x.item_name]=x.quantity);db.srd=sr.data||[]} 
 async function loadSrdData(){const st=await sb.from("stock").select("*").order("item_name");const sr=await sb.from("srd_requests").select("*").eq("requested_by",ses.userId).order("request_no",{ascending:false});if(st.error)throw st.error;if(sr.error)throw sr.error;db.stock={};(st.data||[]).forEach(x=>db.stock[x.item_name]=x.quantity);db.srd=sr.data||[]}
 async function loadStudentHistory(){const r=await sb.rpc("track_public_complaints",{p_registration_no:ses.roll});if(r.error)throw r.error;db.complaints=(r.data||[]).filter(x=>x.status!=="FIXED");db.records=(r.data||[]).filter(x=>x.status==="FIXED")}
-async function loadMembers(){const r=await sb.functions.invoke("bright-endpoint",{body:{action:"list"}});if(r.error)throw r.error;if(r.data?.error)throw new Error(r.data.error);db.members=r.data?.members||[]}
+async function loadMembers(){const r=await sb.functions.invoke("bright-endpoint",{body:{action:"list"}});if(r.error)throw r.error;if(r.data?.error)throw new Error(r.data.error);db.members=(r.data?.members||[]).map(m=>({...m,status:m.status==='Deactivated'?'Deactivated':'Active'}))}
 async function memberLogin(id,password){
  const memberId=String(id||"").trim(),pw=String(password||"");
  if(!memberId||!pw)throw new Error("Invalid Login!");
@@ -142,7 +142,7 @@ members:()=>`<section class=card><h2>Add department member</h2>
  <label>Account type<select id=mr><option value="department_member">Department member</option><option value="admin">Admin</option></select></label>
  <p class=mu style="font-size:13px">Department members manage maintenance work. Admins can also manage members.</p>
  <button class=p onclick="addMember()">Add member</button></section>
- <section class=card><h2>Department members & admins</h2>${tbl(['Member ID','Name','Email','Role','Status'],db.members.map(m=>E(m.registration_no,m.full_name,m.email,m.role==='admin'?'Admin':'Department member','Active')))}</section>
+ <section class=card><h2>Department members & admins</h2>${tbl(['Member ID','Name','Email','Role','Status'],db.members.map(m=>E(m.registration_no,m.full_name,m.email,m.role==='admin'?'Admin':'Department member',m.status==='Deactivated'?'Deactivated':'Active')))}</section>
  <section class=card><h2>Change my password</h2>
  <label>New Password<input id=cp1 type=password minlength=6 placeholder="Minimum 6 characters"></label>
  <label>Confirm New Password<input id=cp2 type=password minlength=6></label>
