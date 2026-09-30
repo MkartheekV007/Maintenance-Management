@@ -148,11 +148,15 @@ Deno.serve(async (req) => {
       const emailById = new Map(
         (users.users || []).map(u => [u.id, u.email || ""])
       );
+      const statusById = new Map(
+        (users.users || []).map(u => [u.id, u.banned_until ? "Deactivated" : "Active"])
+      );
 
       return json({
         members: (profiles || []).map(p => ({
           ...p,
-          email: emailById.get(p.id) || ""
+          email: emailById.get(p.id) || "",
+          status: statusById.get(p.id) || "Deactivated"
         }))
       });
     }
