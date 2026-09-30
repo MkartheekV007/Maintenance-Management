@@ -162,8 +162,13 @@ begin
   where lower(trim(sd.registration_no))=lower(trim(p_registration_no))
   limit 1;
 
-  v_registration_no=coalesce(v_registration_no,trim(p_registration_no));
-  v_student_name=coalesce(v_student_name,trim(p_student_name));
+  if v_registration_no is null then
+    raise exception 'Invalid Student ID';
+  end if;
+
+  if lower(trim(v_student_name)) <> lower(trim(p_student_name)) then
+    raise exception 'Student name does not match the registered ID';
+  end if;
 
   select p.id
   into v_student_id
