@@ -174,7 +174,19 @@ function render(){
   }}
  $('#app').innerHTML=h+'</main>';
 }
-async function studentContinue(){const roll=$("#sid").value.trim(),name=$("#sn").value.trim();if(!roll||!name)return flash("Please enter your ID and name.","er");ses.roll=roll;ses.name=name;ses.tab="raise";try{await loadStudentHistory()}catch(e){return flash("Could not load your saved complaints: "+e.message,"er")}render()}
+async function studentContinue(){
+ const roll=$("#sid").value.trim(),name=$("#sn").value.trim();
+ if(!roll||!name)return flash("Please enter your ID and name.","er");
+ const {data:student,error}=await sb.from("student_directory").select("registration_no,full_name,class_name").eq("registration_no",roll).single();
+ if(error||!student)return flash("Invalid Student ID. Please enter a registered ID.","er");
+ if(student.full_name.trim().toLowerCase()!==name.trim().toLowerCase())return flash("Name does not match the registered Student ID.","er");
+ ses.roll=student.registration_no;
+ ses.name=student.full_name;
+ ses.className=student.class_name;
+ ses.tab="raise";
+ try{await loadStudentHistory()}catch(e){return flash("Could not load your saved complaints: "+e.message,"er")}
+ render()
+}
 const loginV=()=>`<section class=card><h2>Admin login</h2><div class=row><label>ID<input id=lid inputmode=numeric></label><label>Password<input id=lpw type=password></label></div>
  <p class=mu style="font-size:13px">Sign in with your Member ID and password.</p><button class=p onclick="login()">Login</button></section>`;
 async function login(){const id=$("#lid").value.trim(),pw=$("#lpw").value;if(!id||!pw)return flash("Invalid Login!","er");if(ses.role==="member"){try{const p=await memberLogin(id,pw);ses.role=p.role==="admin"?"member":"department_member";ses.name=p.full_name;ses.userId=p.id;ses.roll=p.registration_no||"";ses.tab="dash";nt={m:"Login successful. Welcome "+p.full_name+"!","k":"ok"};await loadAdminData();if(ses.role==="member")await loadMembers();}catch(e){return flash(e.message||"Invalid Login!","er")}}else{const {data,error}=await sb.auth.signInWithPassword({email:id,password:pw});if(error||!data.user)return flash("Invalid Login!","er");const {data:p,error:pe}=await sb.from("profiles").select("*").eq("id",data.user.id).single();if(pe||!p||p.role!=="srd"){await sb.auth.signOut();return flash("Invalid Login!","er")}ses.name=p.full_name;ses.userId=p.id;ses.tab="req";nt={m:"Login successful. Welcome "+p.full_name+"!","k":"ok"};try{await loadSrdData()}catch(e){nt={m:"Login succeeded, but data could not be loaded.","k":"er"}}}render()};
