@@ -87,7 +87,7 @@ async function loadAdminData(){
  db.records=(c.data||[]).filter(x=>x.status==="FIXED");
  db.stock={};(st.data||[]).forEach(x=>db.stock[x.item_name]=x.quantity);db.srd=sr.data||[];
 } async function loadSrdData(){const st=await sb.from("stock").select("*").order("item_name");const sr=await sb.from("srd_requests").select("*").eq("requested_by",ses.userId).order("request_no",{ascending:false});if(st.error)throw st.error;if(sr.error)throw sr.error;db.stock={};(st.data||[]).forEach(x=>db.stock[x.item_name]=x.quantity);db.srd=sr.data||[]}
-async function loadStudentHistory(){const r=await sb.rpc("track_public_complaints",{p_registration_no:ses.roll});if(r.error)throw r.error;db.complaints=(r.data||[]).filter(x=>x.status!=="FIXED");db.records=(r.data||[]).filter(x=>x.status==="FIXED")}
+async function loadStudentHistory(){const r=await sb.rpc("track_public_complaints",{p_registration_no:ses.roll});const cat=await sb.from("repair_catalog").select("*").order("repair_type").order("repair_name").order("component_name");if(r.error)throw r.error;if(cat.error)throw cat.error;db.catalog=cat.data||[];db.complaints=(r.data||[]).filter(x=>x.status!=="FIXED");db.records=(r.data||[]).filter(x=>x.status==="FIXED")}
 async function loadMembers(){const r=await sb.functions.invoke("bright-endpoint",{body:{action:"list"}});if(r.error)throw r.error;if(r.data?.error)throw new Error(r.data.error);db.members=(r.data?.members||[]).map(m=>({...m,status:m.status==='Deactivated'?'Deactivated':'Active'}))}
 async function memberLogin(id,password){
  const memberId=String(id||"").trim(),pw=String(password||"");
@@ -213,7 +213,7 @@ async function raise(){
  let room;
  if(t==='Plumbing'){const n=$('#num').value.trim(),problem=$('#pr').value,component=$('#comp').value;if(!n)return flash('Enter the tap / bathroom / washroom number.','er');if(['Bathroom','Washroom'].includes(problem)&&!component)return flash('Select the plumbing component.','er');room=`${$('#side').value} ${problem} ${n}${['Bathroom','Washroom'].includes(problem)?` - ${component}`:''}`}
  else{room=$('#room').value.trim();if(!room)return flash('Enter the room.','er')}
- const repairName=$("#rn")?.value.trim()||"";const componentName=$("#rc")?.value.trim()||"";
+ const repairName=t==="Plumbing"?$("#pr").value:$("#rn")?.value.trim()||"";const componentName=t==="Plumbing"?$("#comp").value:$("#rc")?.value.trim()||"";
  const {data,error}=await sb.rpc('submit_public_complaint',{
    p_registration_no:ses.roll,p_student_name:ses.name,p_complaint_date:d,
    p_complaint_type:t,p_location:room,p_details:room,p_assigned_to:dutyOf(d)||'Not Found',p_repair_name:repairName||null,p_component_name:componentName||null
