@@ -49,7 +49,7 @@ const sb={
  functions:{invoke:async(name,{body}={})=>{const token=getStored()?.access_token;return api(EDGE_BASE+"/"+name,{method:"POST",headers:{"Authorization":"Bearer "+(token||SUPABASE_KEY)},body:JSON.stringify(body)})}},
  auth:{
   signInWithPassword:async({email,password})=>{const r=await api(AUTH_BASE+"/token?grant_type=password",{method:"POST",headers:{"Authorization":"Bearer "+SUPABASE_KEY},body:JSON.stringify({email,password})});if(!r.error)saveStored(r.data);return{data:r.data,error:r.error}},
-  setSession:async(s)=>{saveStored(s);return{data:{session:s},error:null}},
+  setSession:async(s)=>{saveStored(s);if(s?.access_token){const u=await api(AUTH_BASE+"/user",{method:"GET",headers:{Authorization:"Bearer "+s.access_token}});if(!u.error&&u.data){s={...s,user:u.data};saveStored(s)}}return{data:{session:s},error:null}},
   getSession:async()=>({data:{session:getStored()},error:null}),
   signOut:async()=>{const s=getStored();if(s?.access_token)await api(AUTH_BASE+"/logout",{method:"POST",headers:{Authorization:"Bearer "+s.access_token}});saveStored(null);return{error:null}},
   updateUser:async(attrs)=>{const s=getStored();if(!s?.access_token)return{error:new Error("Not logged in")};const r=await api(AUTH_BASE+"/user",{method:"PUT",headers:{Authorization:"Bearer "+s.access_token},body:JSON.stringify(attrs)});return{data:r.data,error:r.error}}
