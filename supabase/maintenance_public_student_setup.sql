@@ -139,6 +139,7 @@ declare
   v_registration_no text;
   v_student_name text;
   v_class_name text;
+  v_student_id uuid;
 begin
   if nullif(trim(p_registration_no),'') is null
      or nullif(trim(p_student_name),'') is null then
@@ -164,6 +165,12 @@ begin
   v_registration_no=coalesce(v_registration_no,trim(p_registration_no));
   v_student_name=coalesce(v_student_name,trim(p_student_name));
 
+  select p.id
+  into v_student_id
+  from public.profiles p
+  where lower(trim(p.registration_no))=lower(trim(v_registration_no))
+  limit 1;
+
   return query
   insert into public.complaints(
     student_id,
@@ -178,7 +185,7 @@ begin
     status
   )
   values(
-    null,
+    v_student_id,
     v_registration_no,
     v_student_name,
     v_class_name,
