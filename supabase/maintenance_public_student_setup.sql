@@ -343,6 +343,56 @@ $$;
 
 grant execute on function public.record_stock_addition(text,integer,text,text) to authenticated;
 
+-- Student-linked complaint view function.
+-- The UI reads the nine complaint columns from the student directory through SQL.
+create or replace function public.get_pending_complaints()
+returns table(
+  student_id text,
+  student_name text,
+  class_name text,
+  complaint_type text,
+  complaint_id bigint,
+  complaint_date date,
+  assigned_to text,
+  location text,
+  status text
+)
+language plpgsql
+security definer
+set search_path=public
+as $
+declare
+  v_role text;
+begin
+  select role into v_role
+  from public.profiles
+  where id=auth.uid();
+
+  if v_role not in ('admin','department_member') then
+    raise exception 'Only maintenance members can view pending complaints';
+  end if;
+
+  return query
+  select
+    coalesce(sd.registration_no,c.registration_no) as student_id,
+    coalesce(sd.full_name,c.student_name,'') as student_name,
+    coalesce(sd.class_name,'') as class_name,
+    c.complaint_type,
+    c.complaint_no as complaint_id,
+    c.complaint_date,
+    c.assigned_to,
+    c.location,
+    c.status
+  from public.complaints c
+  left join public.student_directory sd
+    on lower(trim(sd.registration_no))=lower(trim(c.registration_no))
+  where c.status <> 'FIXED'
+  order by c.complaint_no desc;
+end;
+$;
+
+grant execute on function public.get_pending_complaints() to authenticated;
+
 -- RLS for the new tables.
 alter table public.rooms enable row level security;
 alter table public.cupboards enable row level security;
