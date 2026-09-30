@@ -63,10 +63,10 @@ const today=()=>new Date().toLocaleDateString("en-CA");
 const dayOf=d=>d?new Date(d+"T00:00:00Z").toLocaleDateString("en-US",{weekday:"long",timeZone:"UTC"}):"";
 const dutyOf=d=>{if(!d)return"";const[y,m,x]=d.split("-"),r=SEED.duties.find(z=>z[4]===m+"/"+x+"/"+y.slice(2));return r?r.slice(0,3).map(s=>s.trim()).filter(Boolean).join(" & "):""};
 const findItem=n=>Object.keys(db.stock).find(k=>k.toLowerCase()===String(n).trim().toLowerCase());
-let db={stock:{...SEED.stock},duties:SEED.duties,admins:SEED.admins,srd:[],records:[],complaints:[],pending:[],members:[],students:[]};
+let db={stock:{...SEED.stock},duties:SEED.duties,admins:SEED.admins,srd:[],records:[],complaints:[],pending:[],members:[],students:[],catalog:[],unavailable:[]};
 let ses={role:"",name:"",roll:"",userId:"",tab:""},nt=null;
 let recoveryMode=new URLSearchParams(window.location.hash.replace(/^#/,"")).get("type")==="recovery";
-const TABS={student:[["raise","Raise complaint"],["upd","My repair updates"]],srd:[["req","Request item"],["prev","Previous requests"]],department_member:[["dash","Summary"],["comp","Complaints"],["pend","Pending (raw)"],["done","Complete repair"],["stock","Stock"]],member:[["dash","Summary"],["comp","Complaints"],["pend","Pending (raw)"],["done","Complete repair"],["stock","Stock"],["members","Members"]]};
+const TABS={student:[["raise","Raise complaint"],["upd","My repair updates"]],srd:[["req","Request item"],["prev","Previous requests"]],department_member:[["dash","Summary"],["comp","Complaints"],["pend","Pending (raw)"],["unavail","Items not available"],["done","Complete repair"],["stock","Stock"]],member:[["dash","Summary"],["comp","Complaints"],["pend","Pending (raw)"],["unavail","Items not available"],["done","Complete repair"],["stock","Stock"],["catalog","Repair types"],["members","Members"]]};
 const flash=(m,k,tab)=>{nt={m,k};if(tab)ses.tab=tab;render()};
 const pick=r=>{ses={role:r,name:"",roll:"",userId:"",tab:""};nt=null;render()};
 const out=async()=>{await sb.auth.signOut();ses={role:"",name:"",roll:"",userId:"",tab:""};nt=null;render()};
@@ -77,8 +77,11 @@ async function loadAdminData(){
  const c=await sb.from("complaints").select("*").order("complaint_no",{ascending:false});
  const st=await sb.from("stock").select("*").order("item_name");
  const sr=await sb.from("srd_requests").select("*").order("request_no",{ascending:false});
+ const cat=await sb.from("repair_catalog").select("*").order("repair_type").order("repair_name").order("component_name");
  const pc=await sb.rpc("get_pending_complaints");
- if(c.error)throw c.error;if(st.error)throw st.error;if(sr.error)throw sr.error;if(pc.error)throw pc.error;
+ if(c.error)throw c.error;if(st.error)throw st.error;if(sr.error)throw sr.error;if(cat.error)throw cat.error;if(pc.error)throw pc.error;
+ const uc=await sb.rpc("get_unavailable_complaints");if(uc.error)throw uc.error;
+ db.unavailable=uc.data||[];db.catalog=cat.data||[];
  db.pending=pc.data||[];
  db.complaints=(c.data||[]).filter(x=>x.status!=="FIXED");
  db.records=(c.data||[]).filter(x=>x.status==="FIXED");
@@ -127,7 +130,7 @@ raise:()=>{const d=today();return `<section class=card><h2>Raise a complaint</h2
  <div id=pl class=row3><label>Side<select id=side><option>A14 Side<option>A05 Side<option>B12 Side<option>B1 Side</select></label>
  <label>Problem<select id=pr onchange="sync()"><option>Tap</option><option>Bathroom</option><option>Washroom</option></select></label><label>Number<input id=num></label></div>
  <label id=cl hidden>Component<select id=comp><option>Tap</option><option>Shower</option><option>Flush</option><option>Wash Basin</option><option>Drain</option><option>Pipe / Water Leakage</option><option>Other</option></select></label>
- <label id=rm hidden>Room<input id=room></label><button class=p onclick="raise()">Submit complaint</button></section>`},
+ <div id=catbox hidden><label>Repair<select id=rn onchange="syncCatalog()"><option value="">Select repair</option></select></label><label>Component<select id=rc><option value="">Select component</option></select></label></div><label id=rm hidden>Room<input id=room></label><p id=stocknote class=mu></p><button class=p onclick="raise()">Submit complaint</button></section>`},
 upd:()=>{
  const n=ses.roll.trim().toLowerCase();
  const all=[...db.complaints,...db.records];
@@ -202,21 +205,23 @@ const loginV=()=>`<section class=card><h2>Admin login</h2><div class=row><label>
  <p class=mu style="font-size:13px">Sign in with your Member ID and password.</p><button class=p onclick="login()">Login</button></section>`;
 async function login(){const id=$("#lid").value.trim(),pw=$("#lpw").value;if(!id||!pw)return flash("Invalid Login!","er");if(ses.role==="member"){try{const p=await memberLogin(id,pw);ses.role=p.role==="admin"?"member":"department_member";ses.name=p.full_name;ses.userId=p.id;ses.roll=p.registration_no||"";ses.tab="dash";nt={m:"Login successful. Welcome "+p.full_name+"!","k":"ok"};await loadAdminData();if(ses.role==="member")await loadMembers();}catch(e){return flash(e.message||"Invalid Login!","er")}}else{const {data,error}=await sb.auth.signInWithPassword({email:id,password:pw});if(error||!data.user)return flash("Invalid Login!","er");const {data:p,error:pe}=await sb.from("profiles").select("*").eq("id",data.user.id).single();if(pe||!p||p.role!=="srd"){await sb.auth.signOut();return flash("Invalid Login!","er")}ses.name=p.full_name;ses.userId=p.id;ses.tab="req";nt={m:"Login successful. Welcome "+p.full_name+"!","k":"ok"};try{await loadSrdData()}catch(e){nt={m:"Login succeeded, but data could not be loaded.","k":"er"}}}render()};
 
-function sync(){const d=$('#d').value,p=$('#t').value==='Plumbing',needsComponent=p&&['Bathroom','Washroom'].includes($('#pr')?.value);$('#dy').value=dayOf(d);$('#du').textContent=dutyOf(d)||'Not Found';$('#pl').hidden=!p;$('#cl').hidden=!needsComponent;$('#rm').hidden=p}
+function sync(){const d=$('#d').value,t=$('#t').value,p=t==='Plumbing',needsComponent=p&&['Bathroom','Washroom'].includes($('#pr')?.value);$('#dy').value=dayOf(d);$('#du').textContent=dutyOf(d)||'Not Found';$('#pl').hidden=!p;$('#cl').hidden=!needsComponent;$('#rm').hidden=p;$('#catbox').hidden=p||!db.catalog.some(x=>x.active&&x.repair_type===t);if(!p)syncCatalog()}
 async function raise(){
  const d=$('#d').value,t=$('#t').value;if(!d)return flash('Pick a date.','er');
  let room;
  if(t==='Plumbing'){const n=$('#num').value.trim(),problem=$('#pr').value,component=$('#comp').value;if(!n)return flash('Enter the tap / bathroom / washroom number.','er');if(['Bathroom','Washroom'].includes(problem)&&!component)return flash('Select the plumbing component.','er');room=`${$('#side').value} ${problem} ${n}${['Bathroom','Washroom'].includes(problem)?` - ${component}`:''}`}
  else{room=$('#room').value.trim();if(!room)return flash('Enter the room.','er')}
+ const repairName=$("#rn")?.value.trim()||"";const componentName=$("#rc")?.value.trim()||"";
  const {data,error}=await sb.rpc('submit_public_complaint',{
    p_registration_no:ses.roll,p_student_name:ses.name,p_complaint_date:d,
-   p_complaint_type:t,p_location:room,p_details:room,p_assigned_to:dutyOf(d)||'Not Found'
+   p_complaint_type:t,p_location:room,p_details:room,p_assigned_to:dutyOf(d)||'Not Found',p_repair_name:repairName||null,p_component_name:componentName||null
  });
  if(error)return flash('Could not save complaint: '+(error.message||'Unknown error'),'er');
  if(data===null||data===undefined||data==='')return flash('Could not save complaint: No complaint ID returned.','er');
  const complaintNo=typeof data==='object'&&data.complaint_no!==undefined?data.complaint_no:data;
  await loadStudentHistory();
- flash(`Complaint saved. Repair ID ${complaintNo} · assigned to ${dutyOf(d)||'Not Found'}.`,'ok','upd');
+ const waiting=typeof data==='object'&&data.awaiting_stock===true;
+ flash(waiting?`Complaint saved. Repair ID ${complaintNo}. The item is not available currently. The work will be done when the item is available.`:`Complaint saved. Repair ID ${complaintNo} · assigned to ${dutyOf(d)||'Not Found'}.`,'ok','upd');
  render();
 }
 function chk(){const k=findItem($('#item').value),el=$('#av');
@@ -255,3 +260,4 @@ async function addStock(){const n=$('#sn2').value.trim(),q=parseInt($('#sq').val
 }
 function fs(v){v=v.toLowerCase();document.querySelectorAll('#st tr').forEach((r,i)=>{if(i)r.hidden=!r.cells[0].textContent.toLowerCase().includes(v)})}
 ; (async()=>{const {data:{session}}=await sb.auth.getSession();if(session){const {data:p}=await sb.from("profiles").select("*").eq("id",session.user.id).single();if(p?.role==="admin"||p?.role==="department_member"){ses={role:p.role==="admin"?"member":"department_member",name:p.full_name,userId:p.id,roll:p.registration_no||"",tab:"dash"};try{await loadAdminData()}catch(e){console.error(e)}}else if(p?.role==="srd"){ses={role:"srd",name:p.full_name,userId:p.id,tab:"req"};try{await loadSrdData()}catch(e){console.error(e)}}}render()})();
+function syncCatalog(){const t=$('#t')?.value,r=$('#rn'),c=$('#rc'),n=$('#stocknote');if(!r||!c)return;const rows=db.catalog.filter(x=>x.active&&x.repair_type===t);r.innerHTML='<option value="">Select repair</option>'+[...new Set(rows.map(x=>x.repair_name))].map(x=>'<option>'+esc(x)+'</option>').join('');if(r.value&&c.dataset.repair!==r.value)c.value='';const comps=rows.filter(x=>x.repair_name===r.value);c.innerHTML='<option value="">Select component</option>'+comps.map(x=>'<option>'+esc(x.component_name)+'</option>').join('');c.dataset.repair=r.value;const hit=comps.find(x=>x.component_name===c.value);n.textContent=hit?((db.stock[hit.stock_item_name]||0)>0?'Item available in stock · Quantity: '+db.stock[hit.stock_item_name]:'Item is not available currently. The work will be done when the item is available.'):'';}
