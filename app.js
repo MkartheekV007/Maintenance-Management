@@ -127,8 +127,18 @@ raise:()=>{const d=today();return `<section class=card><h2>Raise a complaint</h2
  <div id=pl class=row3><label>Side<select id=side><option>A14 Side<option>A05 Side<option>B12 Side<option>B1 Side</select></label>
  <label>Problem<select id=pr><option>Tap<option>Bathroom<option>Washroom</select></label><label>Number<input id=num></label></div>
  <label id=rm hidden>Room<input id=room></label><button class=p onclick="raise()">Submit complaint</button></section>`},
-upd:()=>{const n=ses.roll.trim().toLowerCase(),all=[...db.complaints,...db.records],f=all.filter(c=>String(c.registration_no||'').trim().toLowerCase()===n).map(c=>[c.complaint_no,c.complaint_type,esc(c.location),esc(c.complaint_date),`<span class="tag ${c.status==='FIXED'?'ok':'wa'}">${c.status==='FIXED'?'Completed':esc(c.status)}</span>`]);
- return `<section class=card><h2>My repair updates</h2>${tbl(['ID','Type','Location','Date','Status'],f)}</section>`},
+upd:()=>{
+ const n=ses.roll.trim().toLowerCase();
+ const all=[...db.complaints,...db.records];
+ const f=all.filter(c=>String(c.registration_no||'').trim().toLowerCase()===n).map(c=>[
+   c.complaint_no,
+   c.complaint_type,
+   esc(c.location),
+   esc(c.complaint_date),
+   `<span class="tag ${c.status==='FIXED'?'ok':'wa'}">${c.status==='FIXED'?'Completed':esc(c.status)}</span>`,
+   c.status==='FIXED'?'':`<button class="p" onclick="sendReminder(${Number(c.complaint_no)})">Remind Members</button>`
+ ]);
+ return `<section class=card><h2>My repair updates</h2>${tbl(['ID','Type','Location','Date','Status','Action'],f)}</section>`},
 req:()=>{const d=today();return `<section class=card><h2>Request an item</h2>
  <div class=row><label>Date<input type=date id=d value="${d}" oninput="$('#dy').value=dayOf(this.value)"></label><label>Day<input id=dy readonly value="${dayOf(d)}"></label></div>
  <label>Item<input id=item list=il oninput="chk()" autocomplete=off></label><datalist id=il>${Object.keys(db.stock).map(k=>`<option value="${esc(k)}">`).join('')}</datalist>
@@ -210,6 +220,16 @@ async function raise(){
 }
 function chk(){const k=findItem($('#item').value),el=$('#av');
  if(!$('#item').value.trim())el.textContent='';else if(k){el.className='mu';el.textContent=`Available in stock · Quantity in stock: ${db.stock[k]}`}else{el.className='';el.style.color='var(--er)';el.textContent='Item is not available in stock. Please contact any Maintenance member.'}}
+async function sendReminder(complaintNo){
+ const r=await sb.functions.invoke('bright-endpoint',{
+   body:{action:'remind',registration_no:ses.roll,complaint_no:Number(complaintNo)}
+ });
+ if(r.error)return flash('Reminder could not be sent: '+(r.error.message||'Unknown error'),'er','upd');
+ if(r.data?.error)return flash('Reminder could not be sent: '+r.data.error,'er','upd');
+ await loadStudentHistory();
+ flash('Reminder sent to the Maintenance members and Admins.','ok','upd');
+ render();
+}
 async function reqItem(){const k=findItem($('#item').value);if(!k)return flash('Item is not available in stock. Please contact any Maintenance member.','er');
  const {error}=await sb.from('srd_requests').insert({requested_by:ses.userId,item_name:k,quantity:1,purpose:'Requested from maintenance system'});
  if(error)return flash('Request could not be saved: '+error.message,'er');
