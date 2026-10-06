@@ -53,3 +53,60 @@ input:hover, select:hover {
 @media (prefers-reduced-motion: reduce) {
   button, .role, .card, input, select { transition:none !important; }
 }
+
+
+/* 3D role-page transition */
+.role-transition {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: 0;
+  perspective: 900px;
+}
+.role-transition span,
+.role-transition i {
+  position: absolute;
+  width: 130vmax;
+  height: 130vmax;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%) scale(.05) rotateX(70deg);
+  filter: blur(1px);
+  opacity: .9;
+}
+.role-transition span {
+  background: radial-gradient(circle, rgba(20,100,255,.82) 0%, rgba(20,100,255,.38) 30%, rgba(20,100,255,0) 68%);
+}
+.role-transition i {
+  background: radial-gradient(circle, rgba(255,45,65,.72) 0%, rgba(255,45,65,.30) 30%, rgba(255,45,65,0) 68%);
+  transform: translate(-50%,-50%) scale(.04) rotateX(70deg) rotateZ(25deg);
+}
+.role-transition.active {
+  opacity: 1;
+}
+.role-transition.active span {
+  animation: roleBlue .72s cubic-bezier(.2,.8,.2,1) forwards;
+}
+.role-transition.active i {
+  animation: roleRed .72s cubic-bezier(.2,.8,.2,1) forwards;
+}
+.role-transition.out {
+  animation: roleFade .45s ease forwards;
+}
+@keyframes roleBlue {
+  0% { transform:translate(-50%,-50%) scale(.04) rotateX(70deg); opacity:0; }
+  35% { opacity:1; }
+  100% { transform:translate(-50%,-50%) scale(1.35) rotateX(0deg); opacity:1; }
+}
+@keyframes roleRed {
+  0% { transform:translate(-50%,-50%) scale(.03) rotateX(70deg) rotateZ(25deg); opacity:0; }
+  40% { opacity:1; }
+  100% { transform:translate(-50%,-50%) scale(1.45) rotateX(0deg) rotateZ(25deg); opacity:.85; }
+}
+@keyframes roleFade {
+  from { opacity:1; }
+  to { opacity:0; }
+}
