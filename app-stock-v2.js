@@ -219,6 +219,33 @@ function editDuty(d){
  },0)
 }
 const save=()=>{};
+
+// 3D cursor-follow effect for the three role buttons
+if(!window.__role3dBound){
+  window.__role3dBound=true;
+  document.addEventListener("pointermove",e=>{
+    const el=e.target.closest?.(".role");
+    document.querySelectorAll(".role").forEach(r=>{
+      if(r!==el && !r.classList.contains("role-press")) r.style.transform="";
+    });
+    if(!el||el.classList.contains("role-press"))return;
+    const r=el.getBoundingClientRect();
+    const x=(e.clientX-r.left)/r.width-.5;
+    const y=(e.clientY-r.top)/r.height-.5;
+    const ry=(x*12).toFixed(2);
+    const rx=(-y*10).toFixed(2);
+    const tx=(x*4).toFixed(1);
+    const ty=(y*3).toFixed(1);
+    el.style.transform="perspective(800px) translate3d("+tx+"px,"+ty+"px,8px) rotateX("+rx+"deg) rotateY("+ry+"deg) scale(1.025)";
+    el.style.boxShadow="0 18px 32px rgba(0,0,0,.20),0 6px 12px rgba(0,0,0,.10)";
+  });
+  document.addEventListener("pointerout",e=>{
+    const el=e.target.closest?.(".role");
+    if(!el||el.contains(e.relatedTarget))return;
+    if(!el.classList.contains("role-press"))el.style.transform="";
+    el.style.boxShadow="";
+  });
+}
 function render(){
  if(recoveryMode){document.getElementById("app").innerHTML=`<main><section class=card><h2>Set New Password</h2><p class=mu>Enter a new password for your Maintenance Management account.</p><label>New Password<input id=rp1 type=password minlength=6 placeholder="Minimum 6 characters"></label><label>Confirm New Password<input id=rp2 type=password minlength=6 placeholder="Re-enter your new password"></label><button class=p onclick="resetPassword()">Update Password</button></section></main>`;return}
  let h=`<header><span class="m-logo" style="width:24px;height:24px;display:flex;align-items:center;justify-content:center;background:#fff;color:#0a0a0a;font-size:15px;font-weight:800;border-radius:3px;flex:none">M</span><b>Maintenance Management</b>${ses.role&&ses.name?`<span class=who>${esc(ses.name)} · ${ses.role}</span>`:''}${ses.role?'<button class=g onclick="out()">Exit</button>':''}</header><main>`;
