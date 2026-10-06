@@ -84,7 +84,7 @@ async function loadAdminData(){
  const uc=await sb.rpc("get_unavailable_complaints");if(uc.error)throw uc.error;
  db.unavailable=uc.data||[];db.catalog=cat.data||[];
  db.pending=pc.data||[];
- db.complaints=(c.data||[]).filter(x=>x.status!=="FIXED");
+ db.complaints=c.data||[];
  db.records=(c.data||[]).filter(x=>x.status==="FIXED");
  db.stock={};(st.data||[]).forEach(x=>db.stock[x.item_name]=x.quantity);db.zeroStock=Object.entries(db.stock).filter(([item,quantity])=>Number(quantity)<=0).map(([item,quantity])=>({item,quantity}));db.srd=sr.data||[];
 } async function loadSrdData(){const st=await sb.from("stock").select("*").order("item_name");const sr=await sb.from("srd_requests").select("*").eq("requested_by",ses.userId).order("request_no",{ascending:false});if(st.error)throw st.error;if(sr.error)throw sr.error;db.stock={};(st.data||[]).forEach(x=>db.stock[x.item_name]=x.quantity);db.srd=sr.data||[]}
