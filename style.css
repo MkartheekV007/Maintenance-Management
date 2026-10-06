@@ -22,16 +22,19 @@ button, input, select, .card, .role, nav button {
   transform-style: preserve-3d;
 }
 button:hover, .role:hover {
-  transform: translateY(-2px) perspective(700px) rotateX(1.5deg);
-  box-shadow: 0 7px 16px rgba(0,0,0,.12);
+  transform: perspective(650px) translateY(-4px) rotateX(3deg) rotateY(-2deg) scale(1.015);
+  box-shadow: 0 12px 24px rgba(0,0,0,.16), 0 3px 6px rgba(0,0,0,.08);
+  filter: brightness(1.02);
 }
 .card:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(0,0,0,.08);
+  transform: perspective(900px) translateY(-3px) rotateX(1.2deg);
+  box-shadow: 0 12px 26px rgba(0,0,0,.12), 0 3px 8px rgba(0,0,0,.06);
 }
 button:active, .role:active {
-  transform: translateY(1px) scale(.99);
+  transform: perspective(650px) translateY(1px) scale(.985) rotateX(1deg);
+  box-shadow: 0 4px 9px rgba(0,0,0,.12);
 }
 input:hover, select:hover {
-  transform: translateY(-1px);
+  transform: perspective(650px) translateY(-2px) rotateX(1deg);
+  box-shadow: 0 5px 12px rgba(0,0,0,.09);
 }
