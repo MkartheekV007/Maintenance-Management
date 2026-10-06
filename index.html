@@ -147,7 +147,7 @@ pre{background:var(--bg);padding:12px;border-radius:2px;overflow-x:auto;margin:0
 </style></head><body>
 <div id="app"><main><section class="card"><h2>Loading Maintenance Management System…</h2><p class="mu">Connecting to the application.</p></section></main></div>
 
-<script src="app-stock-v2.js?v=32"></script></body></html>
+<script src="app-stock-v2.js?v=33"></script></body></html>
 <style>
 /* Final homepage alignment: NDG follows SYSTEM on the very next visual line */
 .home-hero .home-title{
@@ -349,5 +349,24 @@ pre{background:var(--bg);padding:12px;border-radius:2px;overflow-x:auto;margin:0
 .home-roles.home-ready{
   position:relative!important;
   top:2cm!important;
+}
+</style>
+<style>
+/* Final: reserve a real 2 cm layout gap before the system-choice line.
+   The text remains hidden until the NDG transition. */
+.home-hero > p.mu{
+  margin-top:2cm!important;
+  margin-bottom:0!important;
+  position:relative!important;
+  top:0!important;
+  transform:none!important;
+}
+.home-hero:not(.home-choice) > p.mu{
+  opacity:0!important;
+  visibility:hidden!important;
+}
+.home-hero.home-choice > p.mu{
+  opacity:1!important;
+  visibility:visible!important;
 }
 </style>
