@@ -261,7 +261,10 @@ function startHomeIntro(){
   if(i<text.length){title.textContent+=text[i++];setTimeout(type,55);return}
   setTimeout(()=>{
    hero.classList.add('home-rise');
-   setTimeout(()=>roles.classList.add('home-ready'),700);
+   setTimeout(()=>{
+    hero.classList.add('home-choice');
+    setTimeout(()=>roles.classList.add('home-ready'),650);
+   },800);
   },1000);
  };
  setTimeout(type,250);
