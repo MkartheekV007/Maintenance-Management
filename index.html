@@ -96,7 +96,26 @@ pre{background:var(--bg);padding:12px;border-radius:2px;overflow-x:auto;margin:0
   100%{transform:translate(-50%,-50%) scale(1.45) rotate(20deg);opacity:.82}
 }
 @keyframes transitionFade{from{opacity:1}to{opacity:0}}
+
+/* Homepage intro: type in the center, rise, then reveal the role cards vertically */
+.home-hero{min-height:52vh;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.home-title{display:inline-block;max-width:100%;font-size:clamp(28px,6vw,48px);text-align:center;white-space:pre-wrap;line-height:1.05;margin:0;padding:0;min-height:2.1em}
+.home-title::after{content:"";display:inline-block;width:2px;height:.9em;background:currentColor;margin-left:4px;vertical-align:-.08em;animation:homeCaret .7s steps(1) infinite}
+.home-hero.home-rise .home-title{animation:homeTitleRise .85s cubic-bezier(.2,.8,.2,1) forwards}
+.home-logo{opacity:0;transform:translateY(18px) scale(.96);transition:opacity .7s ease,transform .7s ease}
+.home-hero.home-rise .home-logo{opacity:1;transform:none}
+.home-roles{display:flex!important;flex-direction:column!important;align-items:stretch;max-width:720px;margin:18px auto 0!important;gap:10px!important;opacity:0}
+.home-roles.home-ready{opacity:1}
+.home-roles .role{opacity:0;transform:translateY(24px) scale(.985);transition:none}
+.home-roles.home-ready .role{animation:homeRoleIn .62s cubic-bezier(.2,.8,.2,1) forwards}
+.home-roles.home-ready .role:nth-child(1){animation-delay:.05s}
+.home-roles.home-ready .role:nth-child(2){animation-delay:.18s}
+.home-roles.home-ready .role:nth-child(3){animation-delay:.31s}
+@keyframes homeCaret{50%{opacity:0}}
+@keyframes homeTitleRise{0%{transform:translateY(0) scale(1)}100%{transform:translateY(-15vh) scale(.72)}}
+@keyframes homeRoleIn{from{opacity:0;transform:translateY(24px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(max-width:560px){.home-hero{min-height:48vh}.home-title{font-size:clamp(25px,8vw,36px)}.home-roles{max-width:none}}
 </style></head><body>
 <div id="app"><main><section class="card"><h2>Loading Maintenance Management System…</h2><p class="mu">Connecting to the application.</p></section></main></div>
 
-<script src="app-stock-v2.js?v=8"></script></body></html>
+<script src="app-stock-v2.js?v=9"></script></body></html>
