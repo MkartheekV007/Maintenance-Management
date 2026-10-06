@@ -280,7 +280,8 @@ function render(){
   else{
    h+=`<nav>${TABS[ses.role].map(t=>`<button class="${ses.tab===t[0]?'on':''}" onclick="tab('${t[0]}')">${t[1]}</button>`).join('')}</nav>`+V[ses.tab]();
   }}
- $('#app').innerHTML=h+'</main>';\n if(!ses.role)startHomeIntro();
+ $('#app').innerHTML=h+'</main>';
+ if(!ses.role)startHomeIntro();
 }
 async function studentContinue(){
  const roll=$("#sid").value.trim(),name=$("#sn").value.trim();
