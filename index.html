@@ -97,6 +97,10 @@ pre{background:var(--bg);padding:12px;border-radius:2px;overflow-x:auto;margin:0
 }
 @keyframes transitionFade{from{opacity:1}to{opacity:0}}
 
+/* Homepage spacing only: keep the existing welcome/layout, bring NDG and roles closer */
+.home-hero .home-logo{margin-top:-12px}
+.home-roles{margin-top:-55px!important}
+
 /* Homepage intro: type in the center, rise, then reveal the role cards vertically */
 .home-hero{min-height:52vh;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden}
 .home-title{display:inline-block;max-width:100%;font-size:clamp(28px,6vw,48px);text-align:center;white-space:pre-wrap;line-height:1.05;margin:0;padding:0;min-height:2.1em}
