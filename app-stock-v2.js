@@ -165,7 +165,7 @@ stock:()=>`<section class=card><h2>Update stock</h2><div class=row><label>Item<i
  <datalist id=il>${Object.keys(db.stock).map(k=>`<option value="${esc(k)}">`).join('')}</datalist><button class=p onclick="addStock()">Add stock</button></section>
  <section class=card><h2>Current stock</h2><label>Search<input oninput="fs(this.value)"></label><div class=tw><table id=st><tr><th>Item</th><th>Quantity</th></tr>${Object.entries(db.stock).map(([k,q])=>`<tr><td>${esc(k)}</td><td>${q}</td></tr>`).join('')}</table></div></section>`,
 catalog:()=>`<section class=card><h2>Repair types & components</h2><p class=mu>Admin controls which component uses which stock item.</p><div class=row><label>Repair type<select id=ct><option>Plumbing</option><option>Electric</option><option>Carpentry</option></select></label><label>Repair name<input id=cr placeholder="Example: Cupboard"></label></div><div class=row><label>Component<input id=cc placeholder="Example: Hinge"></label><label>Stock item<input id=ci placeholder="Example: Cupboard Hinge"></label></div><button class=p onclick="addCatalog()">Add / update mapping</button></section><section class=card><h2>Current repair mappings</h2>${tbl(['Type','Repair','Component','Stock item','Active','Action'],db.catalog.map(x=>[esc(x.repair_type),esc(x.repair_name),esc(x.component_name),esc(x.stock_item_name),x.active?'Yes':'No',catalogAction(x)]))}</section>`,
-duties:()=>'<section class=card><h2>Manage maintenance duties</h2><p class=mu>Admin can change the duty date and the three duty persons.</p><div class=row><label>Date<input id=dd type=date onchange="syncDutyDate()"></label><label>Day<input id=ddy readonly></label></div><div class=row><label>Duty person 1<input id=dm1 placeholder="Member name"></label><label>Duty person 2<input id=dm2 placeholder="Member name"></label></div><div class=row><label>Duty person 3<input id=dm3 placeholder="Member name"></label><label>Notes<input id=dnotes placeholder="Optional"></label></div><button class=p onclick="saveDuty()">Save / update duty</button></section><section class=card><h2>Current duty schedule</h2>'+tbl(['Date','Day','Duty person 1','Duty person 2','Duty person 3','Notes','Action'],(db.duties||[]).map(x=>[esc(displayDate(x.duty_date)),esc(x.duty_day),esc(x.member_1||''),esc(x.member_2||''),esc(x.member_3||''),esc(x.notes||''),'<button class=g onclick="editDuty(\''+esc(x.duty_date)+'\')">Edit</button>']))+'</section>',
+duties:()=>'<section class=card><h2>Manage maintenance duties</h2><p class=mu>Admin can change the duty date and the three duty persons.</p><div class=row><label>Date<input id=dd type=text inputmode=numeric maxlength=10 placeholder="DD MM YYYY" onchange="syncDutyDate()" oninput="formatDutyDate(this)"></label><label>Day<input id=ddy readonly></label></div><div class=row><label>Duty person 1<input id=dm1 placeholder="Member name"></label><label>Duty person 2<input id=dm2 placeholder="Member name"></label></div><div class=row><label>Duty person 3<input id=dm3 placeholder="Member name"></label><label>Notes<input id=dnotes placeholder="Optional"></label></div><button class=p onclick="saveDuty()">Save / update duty</button></section><section class=card><h2>Current duty schedule</h2>'+tbl(['Date','Day','Duty person 1','Duty person 2','Duty person 3','Notes','Action'],(db.duties||[]).map(x=>[esc(displayDate(x.duty_date)),esc(x.duty_day),esc(x.member_1||''),esc(x.member_2||''),esc(x.member_3||''),esc(x.notes||''),'<button class=g onclick="editDuty(\''+esc(x.duty_date)+'\')">Edit</button>']))+'</section>',
 members:()=>`<section class=card><h2>Add department member</h2>
  <div class=row><label>Member ID<input id=mid inputmode=numeric placeholder="Example: 109"></label><label>Name<input id=mn placeholder="Member name"></label></div>
  <div class=row><label>Email ID<input id=me type=email placeholder="member@example.com"></label><label>Initial Password<input id=mp type=password minlength=6 placeholder="Minimum 6 characters"></label></div>
@@ -179,8 +179,8 @@ members:()=>`<section class=card><h2>Add department member</h2>
  <button class=p onclick="changePassword()">Change password</button></section>`};
 
 async function saveDuty(){
- const d=$('#dd')?.value.trim(),m1=$('#dm1')?.value.trim(),m2=$('#dm2')?.value.trim(),m3=$('#dm3')?.value.trim(),notes=$('#dnotes')?.value.trim();
- if(!d)return flash("Select a duty date.","er","duties");
+ const d=parseDutyDate($('#dd')?.value),m1=$('#dm1')?.value.trim(),m2=$('#dm2')?.value.trim(),m3=$('#dm3')?.value.trim(),notes=$('#dnotes')?.value.trim();
+ if(!d)return flash("Enter the date as DD MM YYYY.","er","duties");
  const payload={duty_date:d,duty_day:dayOf(d),member_1:m1||null,member_2:m2||null,member_3:m3||null,notes:notes||null};
  let r;
  if(dutyEditDate&&dutyEditDate!==d){
@@ -194,7 +194,9 @@ async function saveDuty(){
  flash("Duty updated successfully.","ok","duties");
  render()
 }
-function syncDutyDate(){const d=$('#dd')?.value||"";if($('#ddy'))$('#ddy').value=dayOf(d)}
+function parseDutyDate(v){const m=String(v||"").trim().match(/^(\d{2})\s*(\d{2})\s*(\d{4})$/);if(!m)return "";const dd=Number(m[1]),mm=Number(m[2]),yy=Number(m[3]);const x=new Date(Date.UTC(yy,mm-1,dd));return x.getUTCFullYear()===yy&&x.getUTCMonth()===mm-1&&x.getUTCDate()===dd?yy+"-"+String(mm).padStart(2,"0")+"-"+String(dd).padStart(2,"0"):""}
+function formatDutyDate(el){let v=String(el.value||"").replace(/\D/g,"").slice(0,8);if(v.length>4)v=v.slice(0,2)+" "+v.slice(2,4)+" "+v.slice(4);else if(v.length>2)v=v.slice(0,2)+" "+v.slice(2);el.value=v;const d=parseDutyDate(v);if($('#ddy'))$('#ddy').value=d?dayOf(d):""}
+function syncDutyDate(){const d=parseDutyDate($('#dd')?.value||"");if($('#ddy'))$('#ddy').value=d?dayOf(d):""}
 function editDuty(d){
  const r=(db.duties||[]).find(x=>x.duty_date===d);
  if(!r)return;
@@ -202,7 +204,7 @@ function editDuty(d){
  ses.tab="duties";
  render();
  setTimeout(()=>{
-  if($('#dd'))$('#dd').value=r.duty_date;
+  if($('#dd'))$('#dd').value=displayDate(r.duty_date);
   if($('#ddy'))$('#ddy').value=r.duty_day||dayOf(r.duty_date);
   if($('#dm1'))$('#dm1').value=r.member_1||"";
   if($('#dm2'))$('#dm2').value=r.member_2||"";
