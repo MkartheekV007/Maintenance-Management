@@ -147,7 +147,7 @@ pre{background:var(--bg);padding:12px;border-radius:2px;overflow-x:auto;margin:0
 </style></head><body>
 <div id="app"><main><section class="card"><h2>Loading Maintenance Management System…</h2><p class="mu">Connecting to the application.</p></section></main></div>
 
-<script src="app-stock-v2.js?v=30"></script></body></html>
+<script src="app-stock-v2.js?v=31"></script></body></html>
 <style>
 /* Final homepage alignment: NDG follows SYSTEM on the very next visual line */
 .home-hero .home-title{
@@ -308,5 +308,19 @@ pre{background:var(--bg);padding:12px;border-radius:2px;overflow-x:auto;margin:0
 }
 .home-hero.home-choice + .home-roles{
   margin-top:calc(8px + 5cm)!important;
+}
+</style>
+
+<style>
+/* Final: use physical positioning for the requested 5 cm NDG -> choice gap */
+.home-hero.home-choice > .mu{
+  position:relative!important;
+  top:5cm!important;
+  transform:none!important;
+}
+.home-hero.home-choice + .home-roles{
+  position:relative!important;
+  top:5cm!important;
+  margin-top:8px!important;
 }
 </style>
