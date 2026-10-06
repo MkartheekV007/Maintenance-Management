@@ -147,7 +147,7 @@ pre{background:var(--bg);padding:12px;border-radius:2px;overflow-x:auto;margin:0
 </style></head><body>
 <div id="app"><main><section class="card"><h2>Loading Maintenance Management System…</h2><p class="mu">Connecting to the application.</p></section></main></div>
 
-<script src="app-stock-v2.js?v=38"></script>
+<script src="app-stock-v2.js?v=39"></script>
 <style>
 /* Final homepage spacing correction: keep only the requested 1 cm gap and keep Welcome inside its border. */
 .home-hero.home-rise{
@@ -441,4 +441,88 @@ pre{background:var(--bg);padding:12px;border-radius:2px;overflow-x:auto;margin:0
   top:0!important;
   margin-top:1cm!important;
 }
+</style>
+
+<style id="homepage-clean-final-v39">
+/* CLEAN FINAL HOMEPAGE LAYOUT — intentionally overrides all earlier homepage experiments */
+.home-hero{
+  position:relative!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  min-height:0!important;
+  height:auto!important;
+  padding:12px 18px 0!important;
+  margin:0!important;
+  overflow:visible!important;
+  border:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+  background:transparent!important;
+}
+.home-hero .home-title{
+  position:relative!important;
+  z-index:3!important;
+  display:block!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-height:0!important;
+  height:auto!important;
+  margin:0!important;
+  padding:0!important;
+  line-height:1.05!important;
+  text-align:center!important;
+  transform:none!important;
+}
+.home-hero.home-rise .home-title{
+  animation:homeTitleSafeV39 .85s cubic-bezier(.2,.8,.2,1) forwards!important;
+}
+@keyframes homeTitleSafeV39{
+  from{transform:translateY(0) scale(1)}
+  to{transform:translateY(-28px) scale(.82)}
+}
+.home-hero .home-logo{
+  position:relative!important;
+  left:auto!important;
+  top:auto!important;
+  width:min(340px,80%)!important;
+  height:auto!important;
+  display:block!important;
+  margin:1cm auto 0!important;
+  opacity:0!important;
+  transform:translateY(12px) scale(.92)!important;
+  transition:opacity .7s ease,transform .7s cubic-bezier(.2,.8,.2,1)!important;
+}
+.home-hero.home-rise .home-logo{
+  opacity:1!important;
+  transform:translateY(0) scale(.92)!important;
+}
+.home-hero>.mu,
+.home-hero.home-rise>.mu,
+.home-hero.home-choice>.mu{
+  position:relative!important;
+  left:auto!important;
+  top:auto!important;
+  margin:1cm 0 0!important;
+  padding:0!important;
+  transform:none!important;
+}
+.home-hero>.mu{
+  opacity:0!important;
+  visibility:hidden!important;
+}
+.home-hero.home-choice>.mu{
+  opacity:1!important;
+  visibility:visible!important;
+}
+.home-hero + .home-roles,
+.home-hero.home-choice + .home-roles,
+.home-hero.home-choice + .home-roles.home-ready{
+  position:relative!important;
+  top:auto!important;
+  margin:1cm auto 0!important;
+  padding:0!important;
+}
+.home-roles{max-width:720px!important;gap:10px!important}
 </style>
