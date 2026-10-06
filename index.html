@@ -135,7 +135,7 @@ pre{background:var(--bg);padding:12px;border-radius:2px;overflow-x:auto;margin:0
 </style></head><body>
 <div id="app"><main><section class="card"><h2>Loading Maintenance Management System…</h2><p class="mu">Connecting to the application.</p></section></main></div>
 
-<script src="app-stock-v2.js?v=20"></script></body></html>
+<script src="app-stock-v2.js?v=21"></script></body></html>
 <style>
 /* Final homepage alignment: NDG follows SYSTEM on the very next visual line */
 .home-hero .home-title{
@@ -182,5 +182,38 @@ pre{background:var(--bg);padding:12px;border-radius:2px;overflow-x:auto;margin:0
 @keyframes homeTitleFinal{
   from{transform:translateY(0) scale(1)}
   to{transform:translateY(0) scale(.9)}
+}
+</style>
+<style>
+/* Homepage sequence: type -> 1s pause -> welcome rises -> NDG takes its place */
+.home-hero{
+  position:relative!important;
+  overflow:visible!important;
+  min-height:360px!important;
+}
+.home-hero .home-title{
+  position:relative!important;
+  z-index:3!important;
+}
+.home-hero .home-logo{
+  position:absolute!important;
+  left:50%!important;
+  top:50%!important;
+  width:min(340px,80%)!important;
+  margin:0!important;
+  opacity:0!important;
+  transform:translate(-50%,12px) scale(.92)!important;
+  transition:opacity .7s ease,transform .7s cubic-bezier(.2,.8,.2,1)!important;
+}
+.home-hero.home-rise .home-logo{
+  opacity:1!important;
+  transform:translate(-50%,-50%) scale(.92)!important;
+}
+.home-hero.home-rise .home-title{
+  animation:homeTitleTakeUp .85s cubic-bezier(.2,.8,.2,1) forwards!important;
+}
+@keyframes homeTitleTakeUp{
+  from{transform:translateY(0) scale(.9);opacity:1}
+  to{transform:translateY(-115px) scale(.72);opacity:1}
 }
 </style>
