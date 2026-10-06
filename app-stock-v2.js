@@ -83,7 +83,7 @@ async function loadAdminData(){
  const pc=await sb.rpc("get_pending_complaints");
  if(c.error)throw c.error;if(st.error)throw st.error;if(sr.error)throw sr.error;if(dy.error)throw dy.error;if(cat.error)throw cat.error;if(pc.error)throw pc.error;
  const uc=await sb.rpc("get_unavailable_complaints");if(uc.error)throw uc.error;
- db.unavailable=uc.data||[];db.catalog=cat.data||[];db.duties=dy.data?.length?dy.data.map(x=>({duty_date:x.duty_date,duty_day:x.duty_day,member_1:x.member_1,member_2:x.member_2,member_3:x.member_3,notes:x.notes})):((SEED.duties||[]).map(x=>({duty_date:(()=>{const p=String(x[4]||"").split("/");return p.length===3?`20${p[2]}-${p[0].padStart(2,"0")}-${p[1].padStart(2,"0")}`:""} )(),duty_day:x[3],member_1:x[0]||null,member_2:x[1]||null,member_3:x[2]||null,notes:null})));
+ db.unavailable=uc.data||[];db.catalog=cat.data||[];const seededDuties=(SEED.duties||[]).map(x=>{const p=String(x[4]||"").split("/");return{duty_date:p.length===3?`20${p[2]}-${p[0].padStart(2,"0")}-${p[1].padStart(2,"0")}`:"",duty_day:x[3],member_1:x[0]||null,member_2:x[1]||null,member_3:x[2]||null,notes:null}}).filter(x=>x.duty_date);const savedDuties=(dy.data||[]).map(x=>({duty_date:x.duty_date,duty_day:x.duty_day,member_1:x.member_1,member_2:x.member_2,member_3:x.member_3,notes:x.notes}));const dutyMap={};seededDuties.forEach(x=>dutyMap[x.duty_date]=x);savedDuties.forEach(x=>dutyMap[x.duty_date]=x);db.duties=Object.values(dutyMap).sort((a,b)=>a.duty_date.localeCompare(b.duty_date));
  db.pending=pc.data||[];
  db.complaints=c.data||[];
  db.records=(c.data||[]).filter(x=>x.status==="FIXED");
