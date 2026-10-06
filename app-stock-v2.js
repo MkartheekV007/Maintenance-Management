@@ -184,7 +184,11 @@ async function saveDuty(){
  const payload={duty_date:d,duty_day:dayOf(d),member_1:m1||null,member_2:m2||null,member_3:m3||null,notes:notes||null};
  let r;
  if(dutyEditDate&&dutyEditDate!==d){
-  r=await api(REST_BASE+"/duties?duty_date=eq."+encodeURIComponent(dutyEditDate),{method:"PATCH",headers:{...jsonHeaders,Authorization:"Bearer "+(getStored()?.access_token||SUPABASE_KEY),Prefer:"return=minimal"},body:JSON.stringify(payload)});
+  r=await sb.from("duties").upsert([payload],{onConflict:"duty_date"});
+  if(!r.error){
+   const oldRow=await sb.from("duties").delete().eq("duty_date",dutyEditDate);
+   if(oldRow.error)return flash("Duty could not be updated: "+oldRow.error.message,"er","duties");
+  }
  }else{
   r=await sb.from("duties").upsert([payload],{onConflict:"duty_date"});
  }
