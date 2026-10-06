@@ -261,7 +261,7 @@ function startHomeIntro(){
   if(i<text.length){title.textContent+=text[i++];setTimeout(type,55);return}
   setTimeout(()=>{
    hero.classList.add('home-rise');
-   setTimeout(()=>roles.classList.add('home-ready'),1050);
+   setTimeout(()=>roles.classList.add('home-ready'),700);
   },1000);
  };
  setTimeout(type,250);
