@@ -147,7 +147,7 @@ pre{background:var(--bg);padding:12px;border-radius:2px;overflow-x:auto;margin:0
 </style></head><body>
 <div id="app"><main><section class="card"><h2>Loading Maintenance Management System…</h2><p class="mu">Connecting to the application.</p></section></main></div>
 
-<script src="app-stock-v2.js?v=37"></script>
+<script src="app-stock-v2.js?v=38"></script>
 <style>
 /* Final homepage spacing correction: keep only the requested 1 cm gap and keep Welcome inside its border. */
 .home-hero.home-rise{
@@ -412,5 +412,33 @@ pre{background:var(--bg);padding:12px;border-radius:2px;overflow-x:auto;margin:0
 }
 .home-roles{
   margin-top:0!important;
+}
+</style>
+<style id="homepage-final-spacing-v38">
+/* Final homepage correction: only 1 cm gaps; keep the welcome title inside the hero area. */
+.home-hero.home-rise{
+  min-height:360px!important;
+  padding:18px!important;
+  overflow:visible!important;
+  justify-content:center!important;
+}
+.home-hero.home-rise .home-title{
+  animation:homeTitleContainedV38 .85s cubic-bezier(.2,.8,.2,1) forwards!important;
+}
+@keyframes homeTitleContainedV38{
+  from{transform:translateY(0) scale(.9);opacity:1}
+  to{transform:translateY(-35px) scale(.72);opacity:1}
+}
+.home-hero.home-choice>.mu{
+  position:relative!important;
+  top:1cm!important;
+  transform:none!important;
+  margin:0!important;
+}
+.home-hero.home-choice + .home-roles,
+.home-hero.home-choice + .home-roles.home-ready{
+  position:relative!important;
+  top:0!important;
+  margin-top:1cm!important;
 }
 </style>
