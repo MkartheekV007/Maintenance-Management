@@ -61,16 +61,16 @@ const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const today=()=>new Date().toLocaleDateString("en-CA");
 const dayOf=d=>d?new Date(d+"T00:00:00Z").toLocaleDateString("en-US",{weekday:"long",timeZone:"UTC"}):"";
-const dutyOf=d=>{if(!d)return"";const[y,m,x]=d.split("-"),r=SEED.duties.find(z=>z[4]===m+"/"+x+"/"+y.slice(2));return r?r.slice(0,3).map(s=>s.trim()).filter(Boolean).join(" & "):""};
+const dutyOf=d=>{if(!d)return"";const r=(db.duties||[]).find(z=>z.duty_date===d);return r?[r.member_1,r.member_2,r.member_3].map(s=>String(s||"").trim()).filter(Boolean).join(" & "):""};
 const findItem=n=>Object.keys(db.stock).find(k=>k.toLowerCase()===String(n).trim().toLowerCase());
 let db={stock:{...SEED.stock},duties:SEED.duties,admins:SEED.admins,srd:[],records:[],complaints:[],pending:[],members:[],students:[],catalog:[],unavailable:[],zeroStock:[]};
 let ses={role:"",name:"",roll:"",userId:"",tab:""},nt=null;
 let recoveryMode=new URLSearchParams(window.location.hash.replace(/^#/,"")).get("type")==="recovery";
-const TABS={student:[["raise","Raise complaint"],["upd","My repair updates"]],srd:[["req","Request item"],["prev","Previous requests"]],department_member:[["dash","Summary"],["comp","Complaints"],["pend","Pending (raw)"],["unavail","Items not available"],["done","Complete repair"],["stock","Stock"]],member:[["dash","Summary"],["comp","Complaints"],["pend","Pending (raw)"],["unavail","Items not available"],["done","Complete repair"],["stock","Stock"],["catalog","Repair types"],["members","Members"]]};
+const TABS={student:[["raise","Raise complaint"],["upd","My repair updates"]],srd:[["req","Request item"],["prev","Previous requests"]],department_member:[["dash","Summary"],["comp","Complaints"],["pend","Pending (raw)"],["unavail","Items not available"],["done","Complete repair"],["stock","Stock"]],member:[["dash","Summary"],["comp","Complaints"],["pend","Pending (raw)"],["unavail","Items not available"],["done","Complete repair"],["stock","Stock"],["catalog","Repair types"],["duties","Duties"],["members","Members"]]};
 const flash=(m,k,tab)=>{nt={m,k};if(tab)ses.tab=tab;render()};
 const pick=r=>{ses={role:r,name:"",roll:"",userId:"",tab:""};nt=null;render()};
 const out=async()=>{await sb.auth.signOut();ses={role:"",name:"",roll:"",userId:"",tab:""};nt=null;render()};
-const tab=async t=>{ses.tab=t;nt=null;if(ses.role==="member"&&t==="members"){try{await loadMembers()}catch(e){return flash("Members could not be loaded: "+e.message,"er","members")}}render()};
+const tab=async t=>{ses.tab=t;nt=null;if(ses.role==="member"&&t==="members"){try{await loadMembers()}catch(e){return flash("Members could not be loaded: "+e.message,"er","members")}}if(ses.role==="member"&&t==="duties"){try{await loadAdminData()}catch(e){return flash("Duties could not be loaded: "+e.message,"er","duties")}}render()};
 const tbl=(h,rows,compact=false)=>rows.length?"<div class=tw"+(compact?" compact-table":"")+"><table><tr>"+h.map(x=>"<th>"+x+"</th>").join("")+"</tr>"+rows.map(r=>"<tr>"+r.map(c=>"<td>"+c+"</td>").join("")+"</tr>").join("")+"</table></div>":"<p class=mu>Nothing here yet.</p>";
 const catalogAction=x=>`<button class=g onclick="toggleCatalog('${x.id}',${!x.active})">${x.active?"Disable":"Enable"}</button>`;
 const E=(...a)=>a.map(esc);
@@ -78,17 +78,18 @@ async function loadAdminData(){
  const c=await sb.from("complaints").select("*").order("complaint_no",{ascending:false});
  const st=await sb.from("stock").select("*").order("item_name");
  const sr=await sb.from("srd_requests").select("*").order("request_no",{ascending:false});
+ const dy=await sb.from("duties").select("*").order("duty_date");
  const cat=await sb.from("repair_catalog").select("*").order("repair_type").order("repair_name").order("component_name");
  const pc=await sb.rpc("get_pending_complaints");
- if(c.error)throw c.error;if(st.error)throw st.error;if(sr.error)throw sr.error;if(cat.error)throw cat.error;if(pc.error)throw pc.error;
+ if(c.error)throw c.error;if(st.error)throw st.error;if(sr.error)throw sr.error;if(dy.error)throw dy.error;if(cat.error)throw cat.error;if(pc.error)throw pc.error;
  const uc=await sb.rpc("get_unavailable_complaints");if(uc.error)throw uc.error;
- db.unavailable=uc.data||[];db.catalog=cat.data||[];
+ db.unavailable=uc.data||[];db.catalog=cat.data||[];db.duties=dy.data||[];
  db.pending=pc.data||[];
  db.complaints=c.data||[];
  db.records=(c.data||[]).filter(x=>x.status==="FIXED");
  db.stock={};(st.data||[]).forEach(x=>db.stock[x.item_name]=x.quantity);db.zeroStock=Object.entries(db.stock).filter(([item,quantity])=>Number(quantity)<=0).map(([item,quantity])=>({item,quantity}));db.srd=sr.data||[];
 } async function loadSrdData(){const st=await sb.from("stock").select("*").order("item_name");const sr=await sb.from("srd_requests").select("*").eq("requested_by",ses.userId).order("request_no",{ascending:false});if(st.error)throw st.error;if(sr.error)throw sr.error;db.stock={};(st.data||[]).forEach(x=>db.stock[x.item_name]=x.quantity);db.srd=sr.data||[]}
-async function loadStudentHistory(){const r=await sb.rpc("track_public_complaints",{p_registration_no:ses.roll});const cat=await sb.from("repair_catalog").select("*").order("repair_type").order("repair_name").order("component_name");if(r.error)throw r.error;if(cat.error)throw cat.error;db.catalog=cat.data||[];db.complaints=(r.data||[]).filter(x=>x.status!=="FIXED");db.records=(r.data||[]).filter(x=>x.status==="FIXED")}
+async function loadStudentHistory(){const r=await sb.rpc("track_public_complaints",{p_registration_no:ses.roll});const cat=await sb.from("repair_catalog").select("*").order("repair_type").order("repair_name").order("component_name");const dy=await sb.from("duties").select("*").order("duty_date");if(r.error)throw r.error;if(cat.error)throw cat.error;if(dy.error)throw dy.error;db.catalog=cat.data||[];db.duties=dy.data||[];db.complaints=(r.data||[]).filter(x=>x.status!=="FIXED");db.records=(r.data||[]).filter(x=>x.status==="FIXED")}
 async function loadMembers(){const r=await sb.functions.invoke("bright-endpoint",{body:{action:"list"}});if(r.error)throw r.error;if(r.data?.error)throw new Error(r.data.error);db.members=(r.data?.members||[]).map(m=>({...m,status:m.status==='Deactivated'?'Deactivated':'Active'}))}
 async function memberLogin(id,password){
  const memberId=String(id||"").trim(),pw=String(password||"");
@@ -162,6 +163,7 @@ stock:()=>`<section class=card><h2>Update stock</h2><div class=row><label>Item<i
  <datalist id=il>${Object.keys(db.stock).map(k=>`<option value="${esc(k)}">`).join('')}</datalist><button class=p onclick="addStock()">Add stock</button></section>
  <section class=card><h2>Current stock</h2><label>Search<input oninput="fs(this.value)"></label><div class=tw><table id=st><tr><th>Item</th><th>Quantity</th></tr>${Object.entries(db.stock).map(([k,q])=>`<tr><td>${esc(k)}</td><td>${q}</td></tr>`).join('')}</table></div></section>`,
 catalog:()=>`<section class=card><h2>Repair types & components</h2><p class=mu>Admin controls which component uses which stock item.</p><div class=row><label>Repair type<select id=ct><option>Plumbing</option><option>Electric</option><option>Carpentry</option></select></label><label>Repair name<input id=cr placeholder="Example: Cupboard"></label></div><div class=row><label>Component<input id=cc placeholder="Example: Hinge"></label><label>Stock item<input id=ci placeholder="Example: Cupboard Hinge"></label></div><button class=p onclick="addCatalog()">Add / update mapping</button></section><section class=card><h2>Current repair mappings</h2>${tbl(['Type','Repair','Component','Stock item','Active','Action'],db.catalog.map(x=>[esc(x.repair_type),esc(x.repair_name),esc(x.component_name),esc(x.stock_item_name),x.active?'Yes':'No',catalogAction(x)]))}</section>`,
+duties:()=>`<section class=card><h2>Manage maintenance duties</h2><p class=mu>Admin can change the duty date and the three duty persons. Changes are saved for future student complaint assignments.</p><div class=row><label>Date<input id=dd type=date></label><label>Day<input id=ddy readonly></label></div><div class=row><label>Duty person 1<input id=dm1 placeholder="Member name"></label><label>Duty person 2<input id=dm2 placeholder="Member name"></label></div><div class=row><label>Duty person 3<input id=dm3 placeholder="Member name"></label><label>Notes<input id=dnotes placeholder="Optional"></label></div><button class=p onclick="saveDuty()">Save / update duty</button></section><section class=card><h2>Current duty schedule</h2>${tbl(['Date','Day','Duty person 1','Duty person 2','Duty person 3','Notes','Action'],(db.duties||[]).map(x=>[esc(x.duty_date),esc(x.duty_day),esc(x.member_1||''),esc(x.member_2||''),esc(x.member_3||''),esc(x.notes||''),`<button class=g onclick="editDuty('${esc(x.duty_date)}')">Edit</button>`]))}</section>`,
 members:()=>`<section class=card><h2>Add department member</h2>
  <div class=row><label>Member ID<input id=mid inputmode=numeric placeholder="Example: 109"></label><label>Name<input id=mn placeholder="Member name"></label></div>
  <div class=row><label>Email ID<input id=me type=email placeholder="member@example.com"></label><label>Initial Password<input id=mp type=password minlength=6 placeholder="Minimum 6 characters"></label></div>
@@ -174,6 +176,8 @@ members:()=>`<section class=card><h2>Add department member</h2>
  <label>Confirm New Password<input id=cp2 type=password minlength=6></label>
  <button class=p onclick="changePassword()">Change password</button></section>`};
 
+async function saveDuty(){const d=$('#dd')?.value.trim(),m1=$('#dm1')?.value.trim(),m2=$('#dm2')?.value.trim(),m3=$('#dm3')?.value.trim(),notes=$('#dnotes')?.value.trim();if(!d)return flash("Select a duty date.","er","duties");const r=await sb.from("duties").upsert([{duty_date:d,duty_day:dayOf(d),member_1:m1||null,member_2:m2||null,member_3:m3||null,notes:notes||null}],{onConflict:"duty_date"});if(r.error)return flash("Duty could not be saved: "+r.error.message,"er","duties");await loadAdminData();flash("Duty updated successfully.","ok","duties");render()}
+function editDuty(d){const r=(db.duties||[]).find(x=>x.duty_date===d);if(!r)return;ses.tab="duties";render();setTimeout(()=>{if($('#dd'))$('#dd').value=r.duty_date;if($('#dm1'))$('#dm1').value=r.member_1||"";if($('#dm2'))$('#dm2').value=r.member_2||"";if($('#dm3'))$('#dm3').value=r.member_3||"";if($('#dnotes'))$('#dnotes').value=r.notes||"";window.scrollTo({top:0,behavior:"smooth"})},0)}
 const save=()=>{};
 function render(){
  if(recoveryMode){document.getElementById("app").innerHTML=`<main><section class=card><h2>Set New Password</h2><p class=mu>Enter a new password for your Maintenance Management account.</p><label>New Password<input id=rp1 type=password minlength=6 placeholder="Minimum 6 characters"></label><label>Confirm New Password<input id=rp2 type=password minlength=6 placeholder="Re-enter your new password"></label><button class=p onclick="resetPassword()">Update Password</button></section></main>`;return}
