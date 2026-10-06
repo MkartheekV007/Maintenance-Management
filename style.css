@@ -21,20 +21,35 @@ button, input, select, .card, .role, nav button {
   transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
   transform-style: preserve-3d;
 }
+button, .role, .card, input, select {
+  transform-style: preserve-3d;
+  will-change: transform;
+}
 button:hover, .role:hover {
-  transform: perspective(650px) translateY(-4px) rotateX(3deg) rotateY(-2deg) scale(1.015);
-  box-shadow: 0 12px 24px rgba(0,0,0,.16), 0 3px 6px rgba(0,0,0,.08);
-  filter: brightness(1.02);
+  transform: perspective(520px) translateY(-7px) rotateX(5deg) rotateY(-4deg) scale(1.025);
+  box-shadow:
+    0 18px 32px rgba(0,0,0,.20),
+    0 7px 12px rgba(0,0,0,.10),
+    inset 0 1px 0 rgba(255,255,255,.35);
+  filter: brightness(1.035);
+}
+button:hover::after, .role:hover::after {
+  transform: translateZ(8px);
 }
 .card:hover {
-  transform: perspective(900px) translateY(-3px) rotateX(1.2deg);
-  box-shadow: 0 12px 26px rgba(0,0,0,.12), 0 3px 8px rgba(0,0,0,.06);
+  transform: perspective(850px) translateY(-5px) rotateX(2deg) rotateY(-1deg) scale(1.008);
+  box-shadow:
+    0 18px 34px rgba(0,0,0,.15),
+    0 6px 12px rgba(0,0,0,.08);
 }
 button:active, .role:active {
-  transform: perspective(650px) translateY(1px) scale(.985) rotateX(1deg);
-  box-shadow: 0 4px 9px rgba(0,0,0,.12);
+  transform: perspective(520px) translateY(1px) scale(.975) rotateX(3deg);
+  box-shadow: 0 5px 10px rgba(0,0,0,.13);
 }
 input:hover, select:hover {
-  transform: perspective(650px) translateY(-2px) rotateX(1deg);
-  box-shadow: 0 5px 12px rgba(0,0,0,.09);
+  transform: perspective(520px) translateY(-3px) rotateX(2deg) scale(1.008);
+  box-shadow: 0 8px 16px rgba(0,0,0,.11);
+}
+@media (prefers-reduced-motion: reduce) {
+  button, .role, .card, input, select { transition:none !important; }
 }
