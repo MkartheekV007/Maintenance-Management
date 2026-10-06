@@ -83,13 +83,13 @@ async function loadAdminData(){
  const pc=await sb.rpc("get_pending_complaints");
  if(c.error)throw c.error;if(st.error)throw st.error;if(sr.error)throw sr.error;if(dy.error)throw dy.error;if(cat.error)throw cat.error;if(pc.error)throw pc.error;
  const uc=await sb.rpc("get_unavailable_complaints");if(uc.error)throw uc.error;
- db.unavailable=uc.data||[];db.catalog=cat.data||[];db.duties=dy.data||[];
+ db.unavailable=uc.data||[];db.catalog=cat.data||[];db.duties=dy.data?.length?dy.data:SEED.duties.map(x=>({duty_date:x[4]?x[4].replace(/^(\\d\\d)\\/(\\d\\d)\\/(\\d\\d)$/,"20$3-$1-$2"):null,duty_day:x[3],member_1:x[0]||null,member_2:x[1]||null,member_3:x[2]||null,notes:null})).filter(x=>x.duty_date);
  db.pending=pc.data||[];
  db.complaints=c.data||[];
  db.records=(c.data||[]).filter(x=>x.status==="FIXED");
  db.stock={};(st.data||[]).forEach(x=>db.stock[x.item_name]=x.quantity);db.zeroStock=Object.entries(db.stock).filter(([item,quantity])=>Number(quantity)<=0).map(([item,quantity])=>({item,quantity}));db.srd=sr.data||[];
 } async function loadSrdData(){const st=await sb.from("stock").select("*").order("item_name");const sr=await sb.from("srd_requests").select("*").eq("requested_by",ses.userId).order("request_no",{ascending:false});if(st.error)throw st.error;if(sr.error)throw sr.error;db.stock={};(st.data||[]).forEach(x=>db.stock[x.item_name]=x.quantity);db.srd=sr.data||[]}
-async function loadStudentHistory(){const r=await sb.rpc("track_public_complaints",{p_registration_no:ses.roll});const cat=await sb.from("repair_catalog").select("*").order("repair_type").order("repair_name").order("component_name");const dy=await sb.from("duties").select("*").order("duty_date");if(r.error)throw r.error;if(cat.error)throw cat.error;if(dy.error)throw dy.error;db.catalog=cat.data||[];db.duties=dy.data||[];db.complaints=(r.data||[]).filter(x=>x.status!=="FIXED");db.records=(r.data||[]).filter(x=>x.status==="FIXED")}
+async function loadStudentHistory(){const r=await sb.rpc("track_public_complaints",{p_registration_no:ses.roll});const cat=await sb.from("repair_catalog").select("*").order("repair_type").order("repair_name").order("component_name");const dy=await sb.from("duties").select("*").order("duty_date");if(r.error)throw r.error;if(cat.error)throw cat.error;if(dy.error)throw dy.error;db.catalog=cat.data||[];db.duties=dy.data?.length?dy.data:SEED.duties.map(x=>({duty_date:x[4]?x[4].replace(/^(\\d\\d)\\/(\\d\\d)\\/(\\d\\d)$/,"20$3-$1-$2"):null,duty_day:x[3],member_1:x[0]||null,member_2:x[1]||null,member_3:x[2]||null,notes:null})).filter(x=>x.duty_date);db.complaints=(r.data||[]).filter(x=>x.status!=="FIXED");db.records=(r.data||[]).filter(x=>x.status==="FIXED")}
 async function loadMembers(){const r=await sb.functions.invoke("bright-endpoint",{body:{action:"list"}});if(r.error)throw r.error;if(r.data?.error)throw new Error(r.data.error);db.members=(r.data?.members||[]).map(m=>({...m,status:m.status==='Deactivated'?'Deactivated':'Active'}))}
 async function memberLogin(id,password){
  const memberId=String(id||"").trim(),pw=String(password||"");
